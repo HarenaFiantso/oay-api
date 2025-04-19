@@ -2,14 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\ActualiteRepository;
+use App\Repository\ActualityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ActualiteRepository::class)]
-class Actualite
+#[ORM\Entity(repositoryClass: ActualityRepository::class)]
+class Actuality
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -17,10 +17,10 @@ class Actualite
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $lieu = null;
+    private string $lieu;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private string $type;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $photo = null;
@@ -29,16 +29,14 @@ class Actualite
     private ?string $message = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    private ?\DateTime $createdAt;
 
-    /**
-     * @var Collection<int, Voting>
-     */
-    #[ORM\OneToMany(targetEntity: Voting::class, mappedBy: 'actualite')]
+    #[ORM\OneToMany(targetEntity: Voting::class, mappedBy: 'actuality')]
     private Collection $vote;
 
     public function __construct()
     {
+        $this->createdAt = new \DateTime("now");
         $this->vote = new ArrayCollection();
     }
 
@@ -100,7 +98,7 @@ class Actualite
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
@@ -119,7 +117,7 @@ class Actualite
     {
         if (!$this->vote->contains($vote)) {
             $this->vote->add($vote);
-            $vote->setActualite($this);
+            $vote->setActuality($this);
         }
 
         return $this;
@@ -128,9 +126,8 @@ class Actualite
     public function removeVote(Voting $vote): static
     {
         if ($this->vote->removeElement($vote)) {
-            // set the owning side to null (unless already changed)
-            if ($vote->getActualite() === $this) {
-                $vote->setActualite(null);
+            if ($vote->getActuality() === $this) {
+                $vote->setActuality(null);
             }
         }
 

@@ -18,11 +18,11 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $password = null;
+    private string $password;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
@@ -34,7 +34,7 @@ class User implements PasswordAuthenticatedUserInterface
     private ?string $pseudo = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTime $createdAt;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $avatar = null;
@@ -122,7 +122,7 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
@@ -169,10 +169,7 @@ class User implements PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
-    /**
-     * @return Collection<int, Voting>
-     */
+    
     public function getVotings(): Collection
     {
         return $this->votings;
@@ -191,7 +188,6 @@ class User implements PasswordAuthenticatedUserInterface
     public function removeVoting(Voting $voting): static
     {
         if ($this->votings->removeElement($voting)) {
-            // set the owning side to null (unless already changed)
             if ($voting->getVoter() === $this) {
                 $voting->setVoter(null);
             }

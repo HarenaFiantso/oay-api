@@ -17,14 +17,14 @@ class Voting
     private ?string $type = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTime $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'votings')]
     private User $voter;
 
     #[ORM\ManyToOne(inversedBy: 'vote')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Actualite $actualite = null;
+    private ?Actuality $actuality = null;
 
     public function __construct()
     {
@@ -48,7 +48,7 @@ class Voting
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
@@ -72,14 +72,14 @@ class Voting
         return $this;
     }
 
-    public function getActualite(): ?Actualite
+    public function getActuality(): ?Actuality
     {
-        return $this->actualite;
+        return $this->actuality;
     }
 
-    public function setActualite(?Actualite $actualite): static
+    public function setActuality(?Actuality $actuality): static
     {
-        $this->actualite = $actualite;
+        $this->actuality = $actuality;
 
         return $this;
     }
