@@ -69,6 +69,9 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Actuality::class, mappedBy: 'user')]
     private Collection $traffics;
 
+    #[ORM\OneToMany(targetEntity: ZaMbaHoento::class, mappedBy: 'user')]
+    private Collection $zaMbaHoentos;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
@@ -79,6 +82,7 @@ class User implements PasswordAuthenticatedUserInterface
         $this->notifications = new ArrayCollection();
         $this->offers = new ArrayCollection();
         $this->traffics = new ArrayCollection();
+        $this->zaMbaHoentos = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -382,6 +386,36 @@ class User implements PasswordAuthenticatedUserInterface
         if ($this->traffics->removeElement($traffic)) {
             if ($traffic->getUtilisateur() === $this) {
                 $traffic->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ZaMbaHoento>
+     */
+    public function getZaMbaHoentos(): Collection
+    {
+        return $this->zaMbaHoentos;
+    }
+
+    public function addZaMbaHoento(ZaMbaHoento $zaMbaHoento): static
+    {
+        if (!$this->zaMbaHoentos->contains($zaMbaHoento)) {
+            $this->zaMbaHoentos->add($zaMbaHoento);
+            $zaMbaHoento->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeZaMbaHoento(ZaMbaHoento $zaMbaHoento): static
+    {
+        if ($this->zaMbaHoentos->removeElement($zaMbaHoento)) {
+            // set the owning side to null (unless already changed)
+            if ($zaMbaHoento->getUser() === $this) {
+                $zaMbaHoento->setUser(null);
             }
         }
 
