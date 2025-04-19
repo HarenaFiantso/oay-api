@@ -63,6 +63,9 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'user')]
     private Collection $notifications;
 
+    #[ORM\OneToMany(targetEntity: Offer::class, mappedBy: 'user')]
+    private Collection $offers;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
@@ -71,6 +74,7 @@ class User implements PasswordAuthenticatedUserInterface
         $this->avis = new ArrayCollection();
         $this->friends = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+        $this->offers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -276,9 +280,6 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Friends>
-     */
     public function getFriends(): Collection
     {
         return $this->friends;
@@ -305,9 +306,6 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Notification>
-     */
     public function getNotifications(): Collection
     {
         return $this->notifications;
@@ -328,6 +326,32 @@ class User implements PasswordAuthenticatedUserInterface
         if ($this->notifications->removeElement($notification)) {
             if ($notification->getUser() === $this) {
                 $notification->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getOffers(): Collection
+    {
+        return $this->offers;
+    }
+
+    public function addOffer(Offer $offer): static
+    {
+        if (!$this->offers->contains($offer)) {
+            $this->offers->add($offer);
+            $offer->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOffer(Offer $offer): static
+    {
+        if ($this->offers->removeElement($offer)) {
+            if ($offer->getUser() === $this) {
+                $offer->setUser(null);
             }
         }
 
