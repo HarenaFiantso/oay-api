@@ -22,6 +22,10 @@ class Voting
     #[ORM\ManyToOne(inversedBy: 'votings')]
     private User $voter;
 
+    #[ORM\ManyToOne(inversedBy: 'vote')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Actualite $actualite = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime('now');
@@ -64,6 +68,18 @@ class Voting
     public function setVoter(?User $voter): static
     {
         $this->voter = $voter;
+
+        return $this;
+    }
+
+    public function getActualite(): ?Actualite
+    {
+        return $this->actualite;
+    }
+
+    public function setActualite(?Actualite $actualite): static
+    {
+        $this->actualite = $actualite;
 
         return $this;
     }

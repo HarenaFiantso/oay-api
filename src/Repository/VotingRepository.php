@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Voting;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,35 @@ class VotingRepository extends ServiceEntityRepository
         parent::__construct($registry, Voting::class);
     }
 
-    //    /**
-    //     * @return Voting[] Returns an array of Voting objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @param Actualite $actu
+     * @param mixed $value
+     *
+     * @return int Returns count an array of Voting objects
+     */
+    public function findByActuVote(Actualite $actu, mixed $value)
+    {
+        return count($this->createQueryBuilder('v')
+            ->andWhere('v.actualite = :actu')
+            ->andWhere('v.type = :value')
+            ->setParameter('actu', $actu)
+            ->setParameter('value', $value)
+            ->getQuery()
+            ->getResult());
+    }
 
-    //    public function findOneBySomeField($value): ?Voting
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @param Actualite $actualite
+     * @param User|null $user
+     *
+     * @return mixed
+     */
+    public function findByUserVote(Actualite $actualite, ?User $user = null)
+    {
+        $qb = $this->createQueryBuilder('v')->select('v.type');
+        $qb->andWhere('v.user = :user')->andWhere('v.actualite = :actu')
+            ->setParameter('user', $user)->setParameter('actu', $actualite);
+
+        return $qb->getQuery()->getResult();
+    }
 }
