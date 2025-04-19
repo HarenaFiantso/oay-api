@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Utils\SerializerUtils;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,8 +17,15 @@ final class UserController extends AbstractBaseController
         parent::__construct($entityManager, $serializerUtils);
     }
 
-    #[Route('/list', name: 'user.getListUser')]
-    public function getListUser(UserRepository $userRepository): JsonResponse
+    /**
+     * @Route("/api/user/list")
+     *
+     * @param UserRepository $userRepository
+     *
+     * @return JsonResponse
+     */
+    #[Route('/', name: 'user.getList', methods: ['GET'])]
+    public function getUserList(UserRepository $userRepository): JsonResponse
     {
         $data = $userRepository->findAll();
         $lists = [];
@@ -27,5 +35,25 @@ final class UserController extends AbstractBaseController
         }
 
         return new JsonResponse(['list' => $lists]);
+    }
+
+    /**
+     * @Route("/api/user/details/{id}")
+     *
+     * @param User $user
+     *
+     * @return JsonResponse
+     */
+    #[Route('/{id}', name: 'user.getDetails', methods: ['GET'])]
+    public function getUserDetails(User $user): JsonResponse
+    {
+        $thisUser['id'] = $user->getId();
+        $thisUser['photo'] = $user->getAvatar();
+        $thisUser['name'] = $user->getName();
+        $thisUser['pseudo'] = $user->getPseudo();
+        $thisUser['email'] = $user->getEmail();
+        $thisUser['gender'] = $user->getGender() ?? 'Just a human bro';
+
+        return new JsonResponse(['user' => $thisUser]);
     }
 }
