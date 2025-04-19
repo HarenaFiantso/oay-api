@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -32,7 +34,7 @@ class User implements PasswordAuthenticatedUserInterface
     private ?string $pseudo = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTime $createdAt = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $avatar = null;
@@ -42,6 +44,18 @@ class User implements PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?int $point = null;
+
+    #[ORM\OneToMany(targetEntity: Voting::class, mappedBy: 'user')]
+    private Collection $votings;
+
+    #[ORM\OneToOne(targetEntity: Voting::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private Voting $voting;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime("now");
+        $this->votings = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -152,6 +166,48 @@ class User implements PasswordAuthenticatedUserInterface
     public function setPoint(?int $point): static
     {
         $this->point = $point;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Voting>
+     */
+    public function getVotings(): Collection
+    {
+        return $this->votings;
+    }
+
+    public function addVoting(Voting $voting): static
+    {
+        if (!$this->votings->contains($voting)) {
+            $this->votings->add($voting);
+            $voting->setVoter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVoting(Voting $voting): static
+    {
+        if ($this->votings->removeElement($voting)) {
+            // set the owning side to null (unless already changed)
+            if ($voting->getVoter() === $this) {
+                $voting->setVoter(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getVoting(): ?Voting
+    {
+        return $this->voting;
+    }
+
+    public function setVoting(?Voting $voting): static
+    {
+        $this->voting = $voting;
 
         return $this;
     }
