@@ -66,6 +66,9 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Offer::class, mappedBy: 'user')]
     private Collection $offers;
 
+    #[ORM\OneToMany(targetEntity: Actuality::class, mappedBy: 'user')]
+    private Collection $traffics;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
@@ -75,6 +78,7 @@ class User implements PasswordAuthenticatedUserInterface
         $this->friends = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->offers = new ArrayCollection();
+        $this->traffics = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -352,6 +356,32 @@ class User implements PasswordAuthenticatedUserInterface
         if ($this->offers->removeElement($offer)) {
             if ($offer->getUser() === $this) {
                 $offer->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTraffics(): Collection
+    {
+        return $this->traffics;
+    }
+
+    public function addTraffic(Actuality $traffic): static
+    {
+        if (!$this->traffics->contains($traffic)) {
+            $this->traffics->add($traffic);
+            $traffic->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTraffic(Actuality $traffic): static
+    {
+        if ($this->traffics->removeElement($traffic)) {
+            if ($traffic->getUtilisateur() === $this) {
+                $traffic->setUtilisateur(null);
             }
         }
 

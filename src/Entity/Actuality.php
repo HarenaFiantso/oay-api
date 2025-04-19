@@ -40,7 +40,7 @@ class Actuality
 
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'actuality', cascade: ['persist', 'remove'])]
     private Collection $comments;
-
+    
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
@@ -180,5 +180,17 @@ class Actuality
     public function setUser(User $user): void
     {
         $this->user = $user;
+    }
+
+    public function getUtilisateur(): ?User
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?User $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
     }
 }
