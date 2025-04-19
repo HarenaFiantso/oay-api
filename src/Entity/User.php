@@ -60,6 +60,9 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Friends::class, mappedBy: 'userFriends')]
     private Collection $friends;
 
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'user')]
+    private Collection $notifications;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
@@ -67,6 +70,7 @@ class User implements PasswordAuthenticatedUserInterface
         $this->comments = new ArrayCollection();
         $this->avis = new ArrayCollection();
         $this->friends = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -220,9 +224,6 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Comment>
-     */
     public function getComments(): Collection
     {
         return $this->comments;
@@ -249,9 +250,6 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Avis>
-     */
     public function getAvis(): Collection
     {
         return $this->avis;
@@ -270,7 +268,6 @@ class User implements PasswordAuthenticatedUserInterface
     public function removeAvi(Avis $avi): static
     {
         if ($this->avis->removeElement($avi)) {
-            // set the owning side to null (unless already changed)
             if ($avi->getUser() === $this) {
                 $avi->setUser(null);
             }
@@ -300,9 +297,37 @@ class User implements PasswordAuthenticatedUserInterface
     public function removeFriend(Friends $friend): static
     {
         if ($this->friends->removeElement($friend)) {
-            // set the owning side to null (unless already changed)
             if ($friend->getUserFriends() === $this) {
                 $friend->setUserFriends(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): static
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            $notification->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): static
+    {
+        if ($this->notifications->removeElement($notification)) {
+            if ($notification->getUser() === $this) {
+                $notification->setUser(null);
             }
         }
 
