@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ZaMbaHoentoRepository::class)]
+#[ORM\Table(name: 'za_mba_hoentos')]
 class ZaMbaHoento
 {
     #[ORM\Id]
@@ -15,148 +16,139 @@ class ZaMbaHoento
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $depart = null;
+    private string $departureLocation = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $arrive = null;
+    private string $arrivalLocation = '';
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $dateDepart = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $departureDate = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'zaMbaHoentos')]
-    private ?User $user = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private User $creator;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $contact = null;
+    private ?string $contactInfo = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $lieuExact = null;
+    private ?string $exactLocation = null;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $seatCount = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $nombre = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $preference = null;
+    private ?string $preferences = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
-
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDepart(): ?string
+    public function getDepartureLocation(): string
     {
-        return $this->depart;
+        return $this->departureLocation;
     }
 
-    public function setDepart(string $depart): static
+    public function setDepartureLocation(string $departureLocation): self
     {
-        $this->depart = $depart;
-
+        $this->departureLocation = $departureLocation;
         return $this;
     }
 
-    public function getArrive(): ?string
+    public function getArrivalLocation(): string
     {
-        return $this->arrive;
+        return $this->arrivalLocation;
     }
 
-    public function setArrive(string $arrive): static
+    public function setArrivalLocation(string $arrivalLocation): self
     {
-        $this->arrive = $arrive;
-
+        $this->arrivalLocation = $arrivalLocation;
         return $this;
     }
 
-    public function getDateDepart(): ?\DateTime
+    public function getDepartureDate(): ?\DateTimeImmutable
     {
-        return $this->dateDepart;
+        return $this->departureDate;
     }
 
-    public function setDateDepart(?\DateTime $dateDepart): static
+    public function setDepartureDate(?\DateTimeImmutable $departureDate): self
     {
-        $this->dateDepart = $dateDepart;
-
+        $this->departureDate = $departureDate;
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
-    public function getUser(): ?User
+    public function getCreator(): User
     {
-        return $this->user;
+        return $this->creator;
     }
 
-    public function setUser(?User $user): static
+    public function setCreator(User $creator): self
     {
-        $this->user = $user;
-
+        $this->creator = $creator;
         return $this;
     }
 
-    public function getContact(): ?string
+    public function getContactInfo(): ?string
     {
-        return $this->contact;
+        return $this->contactInfo;
     }
 
-    public function setContact(?string $contact): static
+    public function setContactInfo(?string $contactInfo): self
     {
-        $this->contact = $contact;
-
+        $this->contactInfo = $contactInfo;
         return $this;
     }
 
-    public function getLieuExact(): ?string
+    public function getExactLocation(): ?string
     {
-        return $this->lieuExact;
+        return $this->exactLocation;
     }
 
-    public function setLieuExact(?string $lieuExact): static
+    public function setExactLocation(?string $exactLocation): self
     {
-        $this->lieuExact = $lieuExact;
-
+        $this->exactLocation = $exactLocation;
         return $this;
     }
 
-    public function getNombre(): ?string
+    public function getSeatCount(): ?int
     {
-        return $this->nombre;
+        return $this->seatCount;
     }
 
-    public function setNombre(?string $nombre): static
+    public function setSeatCount(?int $seatCount): self
     {
-        $this->nombre = $nombre;
-
+        $this->seatCount = $seatCount;
         return $this;
     }
 
-    public function getPreference(): ?string
+    public function getPreferences(): ?string
     {
-        return $this->preference;
+        return $this->preferences;
     }
 
-    public function setPreference(?string $preference): static
+    public function setPreferences(?string $preferences): self
     {
-        $this->preference = $preference;
-
+        $this->preferences = $preferences;
         return $this;
     }
 }

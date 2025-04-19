@@ -7,7 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
-#[ORM\Table(name: 'notification')]
+#[ORM\Table(name: 'notifications')]
 class Notification
 {
     #[ORM\Id]
@@ -16,21 +16,22 @@ class Notification
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'notifications')]
-    private User $user;
+    #[ORM\JoinColumn(nullable: false)]
+    private User $recipient;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $isView;
+    #[ORM\Column]
+    private bool $isRead = false;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $createdAt;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->isView = false;
-        $this->createdAt = new \DateTime('now');
+        $this->isRead = false;
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -38,27 +39,25 @@ class Notification
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getRecipient(): User
     {
-        return $this->user;
+        return $this->recipient;
     }
 
-    public function setUser(?User $user): static
+    public function setRecipient(User $recipient): self
     {
-        $this->user = $user;
-
+        $this->recipient = $recipient;
         return $this;
     }
 
-    public function isView(): ?bool
+    public function isRead(): bool
     {
-        return $this->isView;
+        return $this->isRead;
     }
 
-    public function setIsView(?bool $isView): static
+    public function setIsRead(bool $isRead): self
     {
-        $this->isView = $isView;
-
+        $this->isRead = $isRead;
         return $this;
     }
 
@@ -67,22 +66,20 @@ class Notification
         return $this->title;
     }
 
-    public function setTitle(?string $title): static
+    public function setTitle(?string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 }

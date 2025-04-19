@@ -6,6 +6,7 @@ use App\Repository\TodoRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TodoRepository::class)]
+#[ORM\Table(name: 'todos')]
 class Todo
 {
     #[ORM\Id]
@@ -14,17 +15,17 @@ class Todo
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private string $title;
+    private string $title = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column]
-    private ?bool $isDone;
+    private bool $isCompleted = false;
 
     public function __construct()
     {
-        $this->isDone = false;
+        $this->isCompleted = false;
     }
 
     public function getId(): ?int
@@ -32,15 +33,14 @@ class Todo
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -49,22 +49,20 @@ class Todo
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
-
         return $this;
     }
 
-    public function isDone(): ?bool
+    public function isCompleted(): bool
     {
-        return $this->isDone;
+        return $this->isCompleted;
     }
 
-    public function setIsDone(bool $isDone): static
+    public function setIsCompleted(bool $isCompleted): self
     {
-        $this->isDone = $isDone;
-
+        $this->isCompleted = $isCompleted;
         return $this;
     }
 }

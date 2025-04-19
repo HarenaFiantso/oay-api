@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\OffreRepository;
+use App\Repository\OfferRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: OffreRepository::class)]
-#[ORM\Table(name: 'offer')]
+#[ORM\Entity(repositoryClass: OfferRepository::class)]
+#[ORM\Table(name: 'offers')]
 class Offer
 {
     #[ORM\Id]
@@ -15,127 +16,126 @@ class Offer
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'offers')]
-    private User $user;
+    #[ORM\JoinColumn(nullable: false)]
+    private User $creator;
 
     #[ORM\Column(length: 255)]
-    private ?string $depart = null;
+    private string $departureLocation = '';
 
     #[ORM\Column(length: 255)]
-    private string $arrive;
+    private string $arrivalLocation = '';
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $frais = null;
+    private ?string $price = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $contact = null;
+    private ?string $contactInfo = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $numberOfPlace = null;
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $numberOfSeats = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $isDispo = null;
+    #[ORM\Column]
+    private bool $isAvailable = true;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->isAvailable = true;
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getCreator(): User
     {
-        return $this->user;
+        return $this->creator;
     }
 
-    public function setUser(?User $user): static
+    public function setCreator(User $creator): self
     {
-        $this->user = $user;
-
+        $this->creator = $creator;
         return $this;
     }
 
-    public function getDepart(): ?string
+    public function getDepartureLocation(): string
     {
-        return $this->depart;
+        return $this->departureLocation;
     }
 
-    public function setDepart(string $depart): static
+    public function setDepartureLocation(string $departureLocation): self
     {
-        $this->depart = $depart;
-
+        $this->departureLocation = $departureLocation;
         return $this;
     }
 
-    public function getArrive(): ?string
+    public function getArrivalLocation(): string
     {
-        return $this->arrive;
+        return $this->arrivalLocation;
     }
 
-    public function setArrive(string $arrive): static
+    public function setArrivalLocation(string $arrivalLocation): self
     {
-        $this->arrive = $arrive;
-
+        $this->arrivalLocation = $arrivalLocation;
         return $this;
     }
 
-    public function getFrais(): ?string
+    public function getPrice(): ?string
     {
-        return $this->frais;
+        return $this->price;
     }
 
-    public function setFrais(string $frais): static
+    public function setPrice(?string $price): self
     {
-        $this->frais = $frais;
-
+        $this->price = $price;
         return $this;
     }
 
-    public function getContact(): ?string
+    public function getContactInfo(): ?string
     {
-        return $this->contact;
+        return $this->contactInfo;
     }
 
-    public function setContact(string $contact): static
+    public function setContactInfo(?string $contactInfo): self
     {
-        $this->contact = $contact;
-
+        $this->contactInfo = $contactInfo;
         return $this;
     }
 
-    public function getNumberOfPlace(): ?string
+    public function getNumberOfSeats(): ?int
     {
-        return $this->numberOfPlace;
+        return $this->numberOfSeats;
     }
 
-    public function setNumberOfPlace(string $numberOfPlace): static
+    public function setNumberOfSeats(?int $numberOfSeats): self
     {
-        $this->numberOfPlace = $numberOfPlace;
-
+        $this->numberOfSeats = $numberOfSeats;
         return $this;
     }
 
-    public function isDispo(): ?bool
+    public function isAvailable(): bool
     {
-        return $this->isDispo;
+        return $this->isAvailable;
     }
 
-    public function setIsDispo(?bool $isDispo): static
+    public function setIsAvailable(bool $isAvailable): self
     {
-        $this->isDispo = $isDispo;
-
+        $this->isAvailable = $isAvailable;
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 }

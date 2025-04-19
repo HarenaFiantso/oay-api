@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\StationRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StationRepository::class)]
@@ -15,7 +16,7 @@ class Station
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $distributeur = null;
+    private ?string $distributor = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $province = null;
@@ -24,34 +25,38 @@ class Station
     private ?string $region = null;
 
     #[ORM\Column(length: 255)]
-    private string $district;
+    private string $district = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $commune = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $localites = null;
+    private string $locality = '';
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $nomStation = null;
+    private ?string $name = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDistributeur(): ?string
+    public function getDistributor(): ?string
     {
-        return $this->distributeur;
+        return $this->distributor;
     }
 
-    public function setDistributeur(?string $distributeur): static
+    public function setDistributor(?string $distributor): self
     {
-        $this->distributeur = $distributeur;
-
+        $this->distributor = $distributor;
         return $this;
     }
 
@@ -60,10 +65,9 @@ class Station
         return $this->province;
     }
 
-    public function setProvince(?string $province): static
+    public function setProvince(?string $province): self
     {
         $this->province = $province;
-
         return $this;
     }
 
@@ -72,22 +76,20 @@ class Station
         return $this->region;
     }
 
-    public function setRegion(?string $region): static
+    public function setRegion(?string $region): self
     {
         $this->region = $region;
-
         return $this;
     }
 
-    public function getDistrict(): ?string
+    public function getDistrict(): string
     {
         return $this->district;
     }
 
-    public function setDistrict(string $district): static
+    public function setDistrict(string $district): self
     {
         $this->district = $district;
-
         return $this;
     }
 
@@ -96,46 +98,42 @@ class Station
         return $this->commune;
     }
 
-    public function setCommune(?string $commune): static
+    public function setCommune(?string $commune): self
     {
         $this->commune = $commune;
-
         return $this;
     }
 
-    public function getLocalites(): ?string
+    public function getLocality(): string
     {
-        return $this->localites;
+        return $this->locality;
     }
 
-    public function setLocalites(string $localites): static
+    public function setLocality(string $locality): self
     {
-        $this->localites = $localites;
-
+        $this->locality = $locality;
         return $this;
     }
 
-    public function getNomStation(): ?string
+    public function getName(): ?string
     {
-        return $this->nomStation;
+        return $this->name;
     }
 
-    public function setNomStation(string $nomStation): static
+    public function setName(?string $name): self
     {
-        $this->nomStation = $nomStation;
-
+        $this->name = $name;
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTime $createdAt): static
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 }

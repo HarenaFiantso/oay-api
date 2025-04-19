@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
+#[ORM\Table(name: '`users`')]
 class User implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,66 +22,67 @@ class User implements PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    private string $password;
+    private string $password = '';
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name = null;
+    private ?string $fullName = null;
 
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $pseudo = null;
+    private ?string $username = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $createdAt;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $avatar = null;
+    private ?string $avatarUrl = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $gender = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $point = null;
+    private ?int $points = null;
 
     #[ORM\OneToMany(targetEntity: Voting::class, mappedBy: 'user')]
-    private Collection $votings;
+    private Collection $votes;
 
-    #[ORM\OneToOne(targetEntity: Voting::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
-    private Voting $voting;
-
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'author')]
     private Collection $comments;
 
-    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'user')]
-    private Collection $avis;
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'author')]
+    private Collection $reviews;
 
-    #[ORM\OneToMany(targetEntity: Friends::class, mappedBy: 'userFriends')]
-    private Collection $friends;
+    #[ORM\OneToMany(targetEntity: Friendship::class, mappedBy: 'requestingUser')]
+    private Collection $sentFriendRequests;
 
-    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Friendship::class, mappedBy: 'receivingUser')]
+    private Collection $receivedFriendRequests;
+
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
     private Collection $notifications;
 
-    #[ORM\OneToMany(targetEntity: Offer::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Offer::class, mappedBy: 'creator')]
     private Collection $offers;
 
-    #[ORM\OneToMany(targetEntity: Actuality::class, mappedBy: 'user')]
-    private Collection $traffics;
+    #[ORM\OneToMany(targetEntity: Report::class, mappedBy: 'author')]
+    private Collection $reports;
 
     #[ORM\OneToMany(targetEntity: ZaMbaHoento::class, mappedBy: 'user')]
     private Collection $zaMbaHoentos;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime("now");
-        $this->votings = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->votes = new ArrayCollection();
         $this->comments = new ArrayCollection();
-        $this->avis = new ArrayCollection();
-        $this->friends = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
+        $this->sentFriendRequests = new ArrayCollection();
+        $this->receivedFriendRequests = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->offers = new ArrayCollection();
-        $this->traffics = new ArrayCollection();
+        $this->reports = new ArrayCollection();
         $this->zaMbaHoentos = new ArrayCollection();
     }
 
@@ -95,82 +96,75 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(?string $email): static
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
-    public function getName(): ?string
+    public function getFullName(): ?string
     {
-        return $this->name;
+        return $this->fullName;
     }
 
-    public function setName(?string $name): static
+    public function setFullName(?string $fullName): self
     {
-        $this->name = $name;
-
+        $this->fullName = $fullName;
         return $this;
     }
 
     public function getRoles(): array
     {
-        return $this->roles;
+        return array_unique(array_merge($this->roles, ['ROLE_USER']));
     }
 
-    public function setRoles(array $roles): static
+    public function setRoles(array $roles): self
     {
         $this->roles = $roles;
-
         return $this;
     }
 
-    public function getPseudo(): ?string
+    public function getUsername(): ?string
     {
-        return $this->pseudo;
+        return $this->username;
     }
 
-    public function setPseudo(?string $pseudo): static
+    public function setUsername(?string $username): self
     {
-        $this->pseudo = $pseudo;
-
+        $this->username = $username;
         return $this;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
-    public function getAvatar(): ?string
+    public function getAvatarUrl(): ?string
     {
-        return $this->avatar;
+        return $this->avatarUrl;
     }
 
-    public function setAvatar(?string $avatar): static
+    public function setAvatarUrl(?string $avatarUrl): self
     {
-        $this->avatar = $avatar;
-
+        $this->avatarUrl = $avatarUrl;
         return $this;
     }
 
@@ -179,60 +173,42 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->gender;
     }
 
-    public function setGender(?string $gender): static
+    public function setGender(?string $gender): self
     {
         $this->gender = $gender;
-
         return $this;
     }
 
-    public function getPoint(): ?int
+    public function getPoints(): ?int
     {
-        return $this->point;
+        return $this->points;
     }
 
-    public function setPoint(?int $point): static
+    public function setPoints(?int $points): self
     {
-        $this->point = $point;
-
+        $this->points = $points;
         return $this;
     }
 
-    public function getVotings(): Collection
+    public function getVotes(): Collection
     {
-        return $this->votings;
+        return $this->votes;
     }
 
-    public function addVoting(Voting $voting): static
+    public function addVote(Voting $vote): self
     {
-        if (!$this->votings->contains($voting)) {
-            $this->votings->add($voting);
-            $voting->setUser($this);
+        if (!$this->votes->contains($vote)) {
+            $this->votes->add($vote);
+            $vote->setUser($this);
         }
-
         return $this;
     }
 
-    public function removeVoting(Voting $voting): static
+    public function removeVote(Voting $vote): self
     {
-        if ($this->votings->removeElement($voting)) {
-            if ($voting->getUser() === $this) {
-                $voting->setUser(null);
-            }
+        if ($this->votes->removeElement($vote) && $vote->getUser() === $this) {
+            $vote->setUser(null);
         }
-
-        return $this;
-    }
-
-    public function getVoting(): ?Voting
-    {
-        return $this->voting;
-    }
-
-    public function setVoting(?Voting $voting): static
-    {
-        $this->voting = $voting;
-
         return $this;
     }
 
@@ -241,76 +217,79 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->comments;
     }
 
-    public function addComment(Comment $comment): static
+    public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
             $this->comments->add($comment);
-            $comment->setUser($this);
+            $comment->setAuthor($this);
         }
-
         return $this;
     }
 
-    public function removeComment(Comment $comment): static
+    public function removeComment(Comment $comment): self
     {
-        if ($this->comments->removeElement($comment)) {
-            if ($comment->getUser() === $this) {
-                $comment->setUser(null);
+        if ($this->comments->removeElement($comment) && $comment->getAuthor() === $this) {
+            $comment->setAuthor(null);
+        }
+        return $this;
+    }
+
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): self
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setAuthor($this);
+        }
+        return $this;
+    }
+
+    public function removeReview(Review $review): self
+    {
+        if ($this->reviews->removeElement($review) && $review->getAuthor() === $this) {
+            $review->setAuthor(null);
+        }
+        return $this;
+    }
+
+    public function getSentFriendRequests(): Collection
+    {
+        return $this->sentFriendRequests;
+    }
+
+    public function getReceivedFriendRequests(): Collection
+    {
+        return $this->receivedFriendRequests;
+    }
+
+    public function addFriendRequest(Friendship $friendship, bool $isRequester = true): self
+    {
+        $collection = $isRequester ? $this->sentFriendRequests : $this->receivedFriendRequests;
+        if (!$collection->contains($friendship)) {
+            $collection->add($friendship);
+            if ($isRequester) {
+                $friendship->setRequestingUser($this);
+            } else {
+                $friendship->setReceivingUser($this);
             }
         }
-
         return $this;
     }
 
-    public function getAvis(): Collection
+    public function removeFriendRequest(Friendship $friendship, bool $isRequester = true): self
     {
-        return $this->avis;
-    }
-
-    public function addAvi(Avis $avi): static
-    {
-        if (!$this->avis->contains($avi)) {
-            $this->avis->add($avi);
-            $avi->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAvi(Avis $avi): static
-    {
-        if ($this->avis->removeElement($avi)) {
-            if ($avi->getUser() === $this) {
-                $avi->setUser(null);
+        $collection = $isRequester ? $this->sentFriendRequests : $this->receivedFriendRequests;
+        if ($collection->removeElement($friendship)) {
+            if ($isRequester && $friendship->getRequestingUser() === $this) {
+                $friendship->setRequestingUser(null);
+            } elseif (!$isRequester && $friendship->getReceivingUser() === $this) {
+                $friendship->setReceivingUser(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getFriends(): Collection
-    {
-        return $this->friends;
-    }
-
-    public function addFriend(Friends $friend): static
-    {
-        if (!$this->friends->contains($friend)) {
-            $this->friends->add($friend);
-            $friend->setUserFriends($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFriend(Friends $friend): static
-    {
-        if ($this->friends->removeElement($friend)) {
-            if ($friend->getUserFriends() === $this) {
-                $friend->setUserFriends(null);
-            }
-        }
-
         return $this;
     }
 
@@ -319,24 +298,20 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->notifications;
     }
 
-    public function addNotification(Notification $notification): static
+    public function addNotification(Notification $notification): self
     {
         if (!$this->notifications->contains($notification)) {
             $this->notifications->add($notification);
-            $notification->setUser($this);
+            $notification->setRecipient($this);
         }
-
         return $this;
     }
 
-    public function removeNotification(Notification $notification): static
+    public function removeNotification(Notification $notification): self
     {
-        if ($this->notifications->removeElement($notification)) {
-            if ($notification->getUser() === $this) {
-                $notification->setUser(null);
-            }
+        if ($this->notifications->removeElement($notification) && $notification->getRecipient() === $this) {
+            $notification->setRecipient(null);
         }
-
         return $this;
     }
 
@@ -345,80 +320,64 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->offers;
     }
 
-    public function addOffer(Offer $offer): static
+    public function addOffer(Offer $offer): self
     {
         if (!$this->offers->contains($offer)) {
             $this->offers->add($offer);
-            $offer->setUser($this);
+            $offer->setCreator($this);
         }
-
         return $this;
     }
 
-    public function removeOffer(Offer $offer): static
+    public function removeOffer(Offer $offer): self
     {
-        if ($this->offers->removeElement($offer)) {
-            if ($offer->getUser() === $this) {
-                $offer->setUser(null);
-            }
+        if ($this->offers->removeElement($offer) && $offer->getCreator() === $this) {
+            $offer->setCreator(null);
         }
-
         return $this;
     }
 
-    public function getTraffics(): Collection
+    public function getReports(): Collection
     {
-        return $this->traffics;
+        return $this->reports;
     }
 
-    public function addTraffic(Actuality $traffic): static
+    public function addReport(Report $report): self
     {
-        if (!$this->traffics->contains($traffic)) {
-            $this->traffics->add($traffic);
-            $traffic->setUtilisateur($this);
+        if (!$this->reports->contains($report)) {
+            $this->reports->add($report);
+            $report->setAuthor($this);
         }
-
         return $this;
     }
 
-    public function removeTraffic(Actuality $traffic): static
+    public function removeReport(Report $report): self
     {
-        if ($this->traffics->removeElement($traffic)) {
-            if ($traffic->getUtilisateur() === $this) {
-                $traffic->setUtilisateur(null);
-            }
+        if ($this->reports->removeElement($report) && $report->getAuthor() === $this) {
+            $report->setAuthor(null);
         }
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, ZaMbaHoento>
-     */
     public function getZaMbaHoentos(): Collection
     {
         return $this->zaMbaHoentos;
     }
 
-    public function addZaMbaHoento(ZaMbaHoento $zaMbaHoento): static
+    public function addZaMbaHoento(ZaMbaHoento $zaMbaHoento): self
     {
         if (!$this->zaMbaHoentos->contains($zaMbaHoento)) {
             $this->zaMbaHoentos->add($zaMbaHoento);
             $zaMbaHoento->setUser($this);
         }
-
         return $this;
     }
 
-    public function removeZaMbaHoento(ZaMbaHoento $zaMbaHoento): static
+    public function removeZaMbaHoento(ZaMbaHoento $zaMbaHoento): self
     {
-        if ($this->zaMbaHoentos->removeElement($zaMbaHoento)) {
-            // set the owning side to null (unless already changed)
-            if ($zaMbaHoento->getUser() === $this) {
-                $zaMbaHoento->setUser(null);
-            }
+        if ($this->zaMbaHoentos->removeElement($zaMbaHoento) && $zaMbaHoento->getUser() === $this) {
+            $zaMbaHoento->setUser(null);
         }
-
         return $this;
     }
 }

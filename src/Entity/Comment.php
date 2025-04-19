@@ -18,27 +18,29 @@ class Comment
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    private string $comment;
+    private string $content = '';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $createdAt;
+    private \DateTimeInterface $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    private User $user;
+    #[ORM\JoinColumn(nullable: false)]
+    private User $author;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    private Actuality $actuality;
+    #[ORM\JoinColumn(nullable: false)]
+    private Report $report;
 
-    #[ORM\ManyToOne(targetEntity: self::class, cascade: ['persist', 'remove'], inversedBy: 'comments')]
-    private ?self $responses;
+    #[ORM\ManyToOne(targetEntity: self::class, cascade: ['persist', 'remove'], inversedBy: 'replies')]
+    private ?Comment $parentComment = null;
 
-    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'responses', cascade: ['persist', 'remove'])]
-    private Collection $comments;
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parentComment', cascade: ['persist', 'remove'])]
+    private Collection $childComments;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime('now');
-        $this->comments = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->childComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -46,87 +48,80 @@ class Comment
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getContent(): string
     {
-        return $this->user;
+        return $this->content;
     }
 
-    public function setUser(?User $user): static
+    public function setContent(string $content): self
     {
-        $this->user = $user;
-
+        $this->content = $content;
         return $this;
     }
 
-    public function getComment(): ?string
-    {
-        return $this->comment;
-    }
-
-    public function setComment(string $comment): static
-    {
-        $this->comment = $comment;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
-    public function getActuality(): ?Actuality
+    public function getAuthor(): User
     {
-        return $this->actuality;
+        return $this->author;
     }
 
-    public function setActuality(?Actuality $actuality): static
+    public function setAuthor(User $author): self
     {
-        $this->actuality = $actuality;
-
+        $this->author = $author;
         return $this;
     }
 
-    public function getResponses(): ?self
+    public function getReport(): Report
     {
-        return $this->responses;
+        return $this->report;
     }
 
-    public function setResponses(?self $responses): static
+    public function setReport(Report $report): self
     {
-        $this->responses = $responses;
-
+        $this->report = $report;
         return $this;
     }
 
-    public function getComments(): Collection
+    public function getParentComment(): ?self
     {
-        return $this->comments;
+        return $this->parentComment;
     }
 
-    public function addComment(self $comment): static
+    public function setParentComment(?self $parentComment): self
     {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setResponses($this);
+        $this->parentComment = $parentComment;
+        return $this;
+    }
+
+    public function getChildComments(): Collection
+    {
+        return $this->childComments;
+    }
+
+    public function addChildComment(self $comment): self
+    {
+        if (!$this->childComments->contains($comment)) {
+            $this->childComments->add($comment);
+            $comment->setParentComment($this);
         }
 
         return $this;
     }
 
-    public function removeComment(self $comment): static
+    public function removeChildComment(self $comment): self
     {
-        if ($this->comments->removeElement($comment)) {
-            if ($comment->getResponses() === $this) {
-                $comment->setResponses(null);
-            }
+        if ($this->childComments->removeElement($comment) && $comment->getParentComment() === $this) {
+            $comment->setParentComment(null);
         }
 
         return $this;

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ParticipantsRepository::class)]
 #[ORM\Table(name: 'participants')]
-class Participants
+class Participant
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -15,52 +15,49 @@ class Participants
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private string $name;
+    private string $firstName = '';
 
     #[ORM\Column(length: 255)]
-    private string $lastName;
+    private string $lastName = '';
 
     #[ORM\Column(length: 255)]
-    private string $gender;
+    private string $gender = '';
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getFirstName(): string
     {
-        return $this->name;
+        return $this->firstName;
     }
 
-    public function setName(string $name): static
+    public function setFirstName(string $firstName): self
     {
-        $this->name = $name;
-
+        $this->firstName = $firstName;
         return $this;
     }
 
-    public function getLastName(): ?string
+    public function getLastName(): string
     {
         return $this->lastName;
     }
 
-    public function setLastName(string $lastName): static
+    public function setLastName(string $lastName): self
     {
         $this->lastName = $lastName;
-
         return $this;
     }
 
-    public function getGender(): ?string
+    public function getGender(): string
     {
         return $this->gender;
     }
 
-    public function setGender(string $gender): static
+    public function setGender(string $gender): self
     {
         $this->gender = $gender;
-
         return $this;
     }
 }

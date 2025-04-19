@@ -2,17 +2,17 @@
 
 namespace App\Repository;
 
-use App\Entity\Fokontany;
+use App\Entity\Friendship;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Fokontany>
+ * @extends ServiceEntityRepository<Friendship>
  */
-class FokontanyRepository extends ServiceEntityRepository
+class FriendshipRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Fokontany::class);
+        parent::__construct($registry, Friendship::class);
     }
 }

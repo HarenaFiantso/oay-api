@@ -6,6 +6,7 @@ use App\Repository\VotingRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: VotingRepository::class)]
+#[ORM\Table(name: 'votings')]
 class Voting
 {
     #[ORM\Id]
@@ -17,13 +18,13 @@ class Voting
     private ?string $type = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt;
+    private ?\DateTimeInterface $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'votings')]
-    private User $user;
+    private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'vote')]
-    private ?Actuality $actuality = null;
+    #[ORM\ManyToOne(inversedBy: 'votes')]
+    private ?Report $report = null;
 
     public function __construct()
     {
@@ -43,19 +44,17 @@ class Voting
     public function setType(?string $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(?\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -67,19 +66,17 @@ class Voting
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 
-    public function getActuality(): ?Actuality
+    public function getReport(): ?Report
     {
-        return $this->actuality;
+        return $this->report;
     }
 
-    public function setActuality(?Actuality $actuality): static
+    public function setReport(?Report $report): static
     {
-        $this->actuality = $actuality;
-
+        $this->report = $report;
         return $this;
     }
 }

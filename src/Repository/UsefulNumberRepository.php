@@ -2,17 +2,17 @@
 
 namespace App\Repository;
 
-use App\Entity\Avis;
+use App\Entity\UsefulNumber;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Avis>
+ * @extends ServiceEntityRepository<UsefulNumber>
  */
-class AvisRepository extends ServiceEntityRepository
+class UsefulNumberRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Avis::class);
+        parent::__construct($registry, UsefulNumber::class);
     }
 }
