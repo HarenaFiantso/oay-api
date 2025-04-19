@@ -54,11 +54,11 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user')]
     private Collection $comments;
 
-    /**
-     * @var Collection<int, Avis>
-     */
     #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'user')]
     private Collection $avis;
+
+    #[ORM\OneToMany(targetEntity: Friends::class, mappedBy: 'userFriends')]
+    private Collection $friends;
 
     public function __construct()
     {
@@ -66,6 +66,7 @@ class User implements PasswordAuthenticatedUserInterface
         $this->votings = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->avis = new ArrayCollection();
+        $this->friends = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -272,6 +273,36 @@ class User implements PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($avi->getUser() === $this) {
                 $avi->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Friends>
+     */
+    public function getFriends(): Collection
+    {
+        return $this->friends;
+    }
+
+    public function addFriend(Friends $friend): static
+    {
+        if (!$this->friends->contains($friend)) {
+            $this->friends->add($friend);
+            $friend->setUserFriends($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriend(Friends $friend): static
+    {
+        if ($this->friends->removeElement($friend)) {
+            // set the owning side to null (unless already changed)
+            if ($friend->getUserFriends() === $this) {
+                $friend->setUserFriends(null);
             }
         }
 
