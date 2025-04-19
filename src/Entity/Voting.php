@@ -23,7 +23,6 @@ class Voting
     private User $voter;
 
     #[ORM\ManyToOne(inversedBy: 'vote')]
-    #[ORM\JoinColumn(nullable: false)]
     private ?Actuality $actuality = null;
 
     public function __construct()

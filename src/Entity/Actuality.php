@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActualityRepository::class)]
+#[ORM\Table(name: 'actuality')]
 class Actuality
 {
     #[ORM\Id]
@@ -31,13 +32,20 @@ class Actuality
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTime $createdAt;
 
-    #[ORM\OneToMany(targetEntity: Voting::class, mappedBy: 'actuality')]
+    #[ORM\ManyToOne(inversedBy: 'traffics')]
+    private User $user;
+
+    #[ORM\OneToMany(targetEntity: Voting::class, mappedBy: 'actuality', cascade: ['persist', 'remove'])]
     private Collection $vote;
+
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'actuality', cascade: ['persist', 'remove'])]
+    private Collection $comments;
 
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
         $this->vote = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,5 +140,45 @@ class Actuality
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setActuality($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getActuality() === $this) {
+                $comment->setActuality(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
     }
 }

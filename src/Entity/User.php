@@ -33,7 +33,7 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $pseudo = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTime $createdAt;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -51,10 +51,14 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(targetEntity: Voting::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Voting $voting;
 
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user')]
+    private Collection $comments;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime("now");
         $this->votings = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -169,7 +173,7 @@ class User implements PasswordAuthenticatedUserInterface
 
         return $this;
     }
-    
+
     public function getVotings(): Collection
     {
         return $this->votings;
@@ -204,6 +208,36 @@ class User implements PasswordAuthenticatedUserInterface
     public function setVoting(?Voting $voting): static
     {
         $this->voting = $voting;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getUser() === $this) {
+                $comment->setUser(null);
+            }
+        }
 
         return $this;
     }
