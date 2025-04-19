@@ -38,7 +38,7 @@ final class UserController extends AbstractBaseController
      * @Route("/add", name: "user.add", methods: ['POST', 'PUT'])
      */
     #[Route('/add', name: 'user.add', methods: ['POST', 'PUT'])]
-    public function createUser(Request $request): JsonResponse
+    public function createOrUpdateUser(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $user = $this->manager->handleUser($data);
@@ -95,5 +95,23 @@ final class UserController extends AbstractBaseController
         return $this->delete($user)
             ? new JsonResponse(['status' => 'success'], Response::HTTP_OK)
             : new JsonResponse(['status' => 'error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Search a user.
+     *
+     * @Route("/search, name: "user.search", methods: ['DELETE'])
+     */
+    #[Route('/search', name: 'user.search', methods: ['GET'])]
+    public function findUser(UserRepository $userRepository, Request $request): JsonResponse
+    {
+        $term = $request->get('term');
+        try {
+            $data = $userRepository->searchUser($term);
+
+            return new JsonResponse(['status' => 'success', 'data' => $data]);
+        } catch (\Exception) {
+            return new JsonResponse(['status' => 'error']);
+        }
     }
 }
