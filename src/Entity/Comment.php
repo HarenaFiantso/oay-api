@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -27,9 +29,16 @@ class Comment
     #[ORM\ManyToOne(inversedBy: 'comments')]
     private Actuality $actuality;
 
+    #[ORM\ManyToOne(targetEntity: self::class, cascade: ['persist', 'remove'], inversedBy: 'comments')]
+    private ?self $responses;
+
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'responses', cascade: ['persist', 'remove'])]
+    private Collection $comments;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime('now');
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,6 +90,44 @@ class Comment
     public function setActuality(?Actuality $actuality): static
     {
         $this->actuality = $actuality;
+
+        return $this;
+    }
+
+    public function getResponses(): ?self
+    {
+        return $this->responses;
+    }
+
+    public function setResponses(?self $responses): static
+    {
+        $this->responses = $responses;
+
+        return $this;
+    }
+
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(self $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setResponses($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(self $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            if ($comment->getResponses() === $this) {
+                $comment->setResponses(null);
+            }
+        }
 
         return $this;
     }

@@ -183,7 +183,7 @@ class User implements PasswordAuthenticatedUserInterface
     {
         if (!$this->votings->contains($voting)) {
             $this->votings->add($voting);
-            $voting->setVoter($this);
+            $voting->setUser($this);
         }
 
         return $this;
@@ -192,8 +192,8 @@ class User implements PasswordAuthenticatedUserInterface
     public function removeVoting(Voting $voting): static
     {
         if ($this->votings->removeElement($voting)) {
-            if ($voting->getVoter() === $this) {
-                $voting->setVoter(null);
+            if ($voting->getUser() === $this) {
+                $voting->setUser(null);
             }
         }
 
@@ -233,7 +233,6 @@ class User implements PasswordAuthenticatedUserInterface
     public function removeComment(Comment $comment): static
     {
         if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
             if ($comment->getUser() === $this) {
                 $comment->setUser(null);
             }

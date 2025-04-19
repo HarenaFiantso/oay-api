@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Actuality;
 use App\Entity\User;
 use App\Entity\Voting;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -23,12 +24,12 @@ class VotingRepository extends ServiceEntityRepository
      *
      * @return int Returns count an array of Voting objects
      */
-    public function findByActuVote(Actualite $actu, mixed $value)
+    public function findByActualityVote(Actuality $actuality, mixed $value): int
     {
         return count($this->createQueryBuilder('v')
-            ->andWhere('v.actualite = :actu')
+            ->andWhere('v.actuality = :actuality')
             ->andWhere('v.type = :value')
-            ->setParameter('actu', $actu)
+            ->setParameter('actuality', $actuality)
             ->setParameter('value', $value)
             ->getQuery()
             ->getResult());
@@ -40,11 +41,11 @@ class VotingRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByUserVote(Actualite $actualite, ?User $user = null)
+    public function findByUserVote(Actuality $actuality, ?User $user = null): mixed
     {
         $qb = $this->createQueryBuilder('v')->select('v.type');
-        $qb->andWhere('v.user = :user')->andWhere('v.actualite = :actu')
-            ->setParameter('user', $user)->setParameter('actu', $actualite);
+        $qb->andWhere('v.user = :user')->andWhere('v.actuality = :actuality')
+            ->setParameter('user', $user)->setParameter('actuality', $actuality);
 
         return $qb->getQuery()->getResult();
     }

@@ -20,7 +20,7 @@ class Voting
     private ?\DateTime $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'votings')]
-    private User $voter;
+    private User $user;
 
     #[ORM\ManyToOne(inversedBy: 'vote')]
     private ?Actuality $actuality = null;
@@ -59,14 +59,14 @@ class Voting
         return $this;
     }
 
-    public function getVoter(): ?User
+    public function getUser(): ?User
     {
-        return $this->voter;
+        return $this->user;
     }
 
-    public function setVoter(?User $voter): static
+    public function setUser(?User $user): static
     {
-        $this->voter = $voter;
+        $this->user = $user;
 
         return $this;
     }
