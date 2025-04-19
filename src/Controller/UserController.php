@@ -56,4 +56,23 @@ final class UserController extends AbstractBaseController
 
         return new JsonResponse(['user' => $thisUser]);
     }
+
+    /**
+     * @Route("/api/user/delete/{id}")
+     *
+     * @param User $user
+     *
+     * @return JsonResponse
+     */
+    #[Route('/{id}', name: 'user.delete', methods: ['DELETE'])]
+    public function removeUser(User $user): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+
+        if ($this->delete($user)) {
+            return new JsonResponse(['status' => 'success']);
+        }
+
+        return new JsonResponse(['status' => 'error']);
+    }
 }
