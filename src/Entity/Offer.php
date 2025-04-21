@@ -34,16 +34,18 @@ class Offer
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $numberOfSeats = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private bool $isAvailable = true;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $departureAt = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->isAvailable = true;
     }
 
     public function getId(): ?int
@@ -136,6 +138,18 @@ class Offer
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getDepartureAt(): ?\DateTimeImmutable
+    {
+        return $this->departureAt;
+    }
+
+    public function setDepartureAt(\DateTimeImmutable $departureAt): static
+    {
+        $this->departureAt = $departureAt;
+
         return $this;
     }
 }
