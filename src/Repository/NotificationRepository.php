@@ -15,4 +15,16 @@ class NotificationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Notification::class);
     }
+
+    public function findByUser($user)
+    {
+        return $this->createQueryBuilder('n')
+            ->andWhere('n.recipient = :recipient')
+            ->andWhere('n.isRead = :isRead')
+            ->setParameter('isRead', false)
+            ->setParameter('recipient', $user)
+            ->orderBy('n.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use AllowDynamicProperties;
 use App\Entity\User;
 use App\Manager\UserManager;
+use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
 use App\Utils\SerializerUtils;
 use Doctrine\ORM\EntityManagerInterface;
@@ -113,5 +114,32 @@ final class UserController extends AbstractBaseController
         } catch (\Exception) {
             return new JsonResponse(['status' => 'error']);
         }
+    }
+
+    /**
+     * Get notifications.
+     *
+     * @Route("/notifications/{id}, name: "user.getNotifications", methods: ['GET'])
+     */
+    #[Route('/notifications/{id}', name: 'user.getNotifications', methods: ['GET'])]
+    public function getNotifications(User $user, NotificationRepository $notificationRepository): JsonResponse
+    {
+        $notifs = $notificationRepository->findByUser($user);
+        $data = [];
+
+        foreach ($notifs as $key => $notification) {
+            $data[$key]['title'] = $notification->getTitle();
+            $data[$key]['id'] = $notification->getId();
+            $data[$key]['dateAdd'] = $notification->getCreatedAt()->format('d-m-Y H:i');
+        }
+
+        return new JsonResponse(['notifs' => $data]);
+    }
+
+    public function getCountNotifs(User $user, NotificationRepository $notificationRepository): JsonResponse
+    {
+        $notifs = count($notificationRepository->findByUser($user));
+
+        return new JsonResponse(['notifs' => $notifs]);
     }
 }
