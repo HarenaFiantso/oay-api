@@ -7,7 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Voting>
+ * @extends ServiceEntityRepository<User>
  */
 class UserRepository extends ServiceEntityRepository
 {
@@ -18,23 +18,19 @@ class UserRepository extends ServiceEntityRepository
 
     public function searchUser(string $needle): array
     {
-        $data = $this->createQueryBuilder('u')
-            ->andWhere('u.fullName = :fullName')
-            ->andWhere('u.email = :email')
-            ->setParameter('name', '%' . $needle . '%')
-            ->setParameter('email', '%' . $needle . '%')
+        $query = $this->createQueryBuilder('u')
+            ->where('u.fullName LIKE :search')
+            ->orWhere('u.email LIKE :search')
+            ->setParameter('search', '%' . $needle . '%')
             ->setMaxResults(10)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
 
-        $lists = [];
+        $users = $query->getResult();
 
-        foreach ($data as $key => $item) {
-            $lists[$key]['fullName'] = $item->getFullName();
-            $lists[$key]['email'] = $item->getEmail();
-            $lists[$key]['id'] = $item->getId();
-        }
-
-        return $lists;
+        return array_map(fn(User $user) => [
+            'id' => $user->getId(),
+            'fullName' => $user->getFullName(),
+            'email' => $user->getEmail(),
+        ], $users);
     }
 }
