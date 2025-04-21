@@ -18,34 +18,22 @@ class VotingRepository extends ServiceEntityRepository
         parent::__construct($registry, Voting::class);
     }
 
-    /**
-     * @param Actualite $actu
-     * @param mixed $value
-     *
-     * @return int Returns count an array of Voting objects
-     */
-    public function findByActualityVote(Report $actuality, mixed $value): int
+    public function findByReportVote(Report $report, mixed $value): int
     {
         return count($this->createQueryBuilder('v')
-            ->andWhere('v.actuality = :actuality')
+            ->andWhere('v.report = :report')
             ->andWhere('v.type = :value')
-            ->setParameter('actuality', $actuality)
+            ->setParameter('report', $report)
             ->setParameter('value', $value)
             ->getQuery()
             ->getResult());
     }
 
-    /**
-     * @param Actualite $actualite
-     * @param User|null $user
-     *
-     * @return mixed
-     */
-    public function findByUserVote(Report $actuality, ?User $user = null): mixed
+    public function findByUserVote(Report $report, ?User $user = null): mixed
     {
         $qb = $this->createQueryBuilder('v')->select('v.type');
-        $qb->andWhere('v.user = :user')->andWhere('v.actuality = :actuality')
-            ->setParameter('user', $user)->setParameter('actuality', $actuality);
+        $qb->andWhere('v.user = :user')->andWhere('v.report = :report')
+            ->setParameter('user', $user)->setParameter('report', $report);
 
         return $qb->getQuery()->getResult();
     }

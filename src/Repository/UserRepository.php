@@ -7,10 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method User|null find($id, $lockMode = null, $lockVersion = null)
- * @method User|null findOneBy(array $criteria, array $orderBy = null)
- * @method User[]    findAll()
- * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<Voting>
  */
 class UserRepository extends ServiceEntityRepository
 {
@@ -19,11 +16,6 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    /**
-     * @param string $needle
-     *
-     * @return array Returns an array of User data
-     */
     public function searchUser(string $needle): array
     {
         $data = $this->createQueryBuilder('u')
@@ -37,12 +29,8 @@ class UserRepository extends ServiceEntityRepository
 
         $lists = [];
 
-        /**
-         * @var int $key
-         * @var User $item
-         */
         foreach ($data as $key => $item) {
-            $lists[$key]['name'] = $item->getName();
+            $lists[$key]['name'] = $item->getFullName();
             $lists[$key]['email'] = $item->getEmail();
             $lists[$key]['id'] = $item->getId();
         }

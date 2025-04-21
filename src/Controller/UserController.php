@@ -72,9 +72,9 @@ final class UserController extends AbstractBaseController
     {
         $thisUser = [
             'id' => $user->getId(),
-            'photo' => $user->getAvatar(),
-            'name' => $user->getName(),
-            'pseudo' => $user->getPseudo(),
+            'avatar' => $user->getAvatarUrl(),
+            'name' => $user->getFullName(),
+            'username' => $user->getUsername(),
             'email' => $user->getEmail(),
             'gender' => $user->getGender() ?? 'Just a human bro',
         ];
