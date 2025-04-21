@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\SocieteRepository;
+use App\Repository\CompanyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: SocieteRepository::class)]
+#[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ORM\Table(name: 'company')]
 class Company
 {
@@ -42,6 +42,11 @@ class Company
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getName(): ?string
@@ -104,22 +109,8 @@ class Company
         return $this->reviews;
     }
 
-    public function addReview(Review $review): self
+    public function setReviews(Collection $reviews): void
     {
-        if (!$this->reviews->contains($review)) {
-            $this->reviews->add($review);
-            $review->setCompany($this);
-        }
-
-        return $this;
-    }
-
-    public function removeReview(Review $review): self
-    {
-        if ($this->reviews->removeElement($review) && $review->getCompany() === $this) {
-            $review->setCompany(null);
-        }
-
-        return $this;
+        $this->reviews = $reviews;
     }
 }
