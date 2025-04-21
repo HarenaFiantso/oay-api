@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Notification;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -26,5 +27,24 @@ class NotificationRepository extends ServiceEntityRepository
             ->orderBy('n.id', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findViewedNotif($user, $page = 0, $limit = 10): array
+    {
+        $query = $this->createQueryBuilder('n')
+            ->andWhere('n.user = :val')
+            ->setParameter('val', $user)
+            ->orderBy('n.id', 'ASC')
+            ->getQuery();
+
+        $paginator = new Paginator($query);
+        $paginator->getQuery()->setFirstResult($page)->setMaxResults($limit);
+
+        $list = [];
+        foreach ($paginator as $value) {
+            $list[] = $value;
+        }
+
+        return $list;
     }
 }

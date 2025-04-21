@@ -133,19 +133,42 @@ final class UserController extends AbstractBaseController
             $data[$key]['createdAt'] = $notification->getCreatedAt()->format('d-m-Y H:i');
         }
 
-        return new JsonResponse(['notifs' => $data]);
+        return new JsonResponse(['notifications' => $data]);
     }
 
     /**
      * Get notifications count
      *
-     * @Route("/notifications/count/{id}, name: "user.countNewNotifications", methods: ['DELETE'])
+     * @Route("/notifications/count/{id}, name: "user.countNewNotifications", methods: ['GET'])
      */
     #[Route('/notifications/count/{id}', name: 'user.countNewNotifications', methods: ['GET'])]
     public function getCountNotifications(User $user, NotificationRepository $notificationRepository): JsonResponse
     {
         $notifs = count($notificationRepository->findByUser($user));
 
-        return new JsonResponse(['notifs' => $notifs]);
+        return new JsonResponse(['notifications' => $notifs]);
+    }
+
+    /**
+     * Get all notifications
+     *
+     * @Route("/notifications/all/{id}, name: "user.getAllNotifications", methods: ['GET'])
+     */
+    #[Route('/notifications/all/{id}', name: 'user.getAllNotifications', methods: ['GET'])]
+    public function getAllNotifications(Request $request, User $user, NotificationRepository $notificationRepository): JsonResponse
+    {
+        $limit = $request->get('limit');
+        $page = $request->get('page');
+
+        $notifs = $notificationRepository->findViewedNotif($user, $page ?: 0, $limit + 10);
+        $data = [];
+
+        foreach ($notifs as $key => $notification) {
+            $data[$key]['title'] = $notification->getTitle();
+            $data[$key]['id'] = $notification->getId();
+            $data[$key]['createdAt'] = $notification->getDateAdd()->format('d-m-Y H:i');
+        }
+
+        return new JsonResponse(['notifications' => $data]);
     }
 }
