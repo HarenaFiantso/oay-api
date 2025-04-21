@@ -20,8 +20,8 @@ class UserManager extends AbstractManager
         $user->setEmail($data['email'] ?? 'notfound@gmail.com')
             ->setPassword($this->encoder->hashPassword($user, $data['password'] ?? '123456'))
             ->setRoles($this->getUserRoles($data['roles'] ?? []))
-            ->setName($data['name'] ?? 'Oay user')
-            ->setGender($data['gender'] ?? 'Lahy');
+            ->setFullName($data['name'] ?? 'Simple user')
+            ->setGender($data['gender'] ?? 'Man');
 
         return $user;
     }

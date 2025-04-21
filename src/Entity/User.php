@@ -8,10 +8,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`users`')]
-class User implements PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -36,6 +37,9 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\OneToMany(targetEntity: Report::class, mappedBy: 'user')]
+    private Collection $traffics;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $avatarUrl = null;
 
@@ -54,11 +58,8 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'author')]
     private Collection $reviews;
 
-    #[ORM\OneToMany(targetEntity: Friendship::class, mappedBy: 'requestingUser')]
-    private Collection $sentFriendRequests;
-
-    #[ORM\OneToMany(targetEntity: Friendship::class, mappedBy: 'receivingUser')]
-    private Collection $receivedFriendRequests;
+    #[ORM\OneToMany(targetEntity: Friendship::class, mappedBy: 'userFriends')]
+    private Collection $friendships;
 
     #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
     private Collection $notifications;
@@ -70,25 +71,30 @@ class User implements PasswordAuthenticatedUserInterface
     private Collection $reports;
 
     #[ORM\OneToMany(targetEntity: ZaMbaHoento::class, mappedBy: 'user')]
-    private Collection $zaMbaHoentos;
+    private Collection $canYouGiveARide;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable("now");
         $this->votes = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->reviews = new ArrayCollection();
-        $this->sentFriendRequests = new ArrayCollection();
-        $this->receivedFriendRequests = new ArrayCollection();
+        $this->friendships = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->offers = new ArrayCollection();
         $this->reports = new ArrayCollection();
-        $this->zaMbaHoentos = new ArrayCollection();
+        $this->canYouGiveARide = new ArrayCollection();
+        $this->traffics = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getEmail(): ?string
@@ -126,7 +132,8 @@ class User implements PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return array_unique(array_merge($this->roles, ['ROLE_USER']));
+        $roles = $this->roles;
+        return array_unique($roles);
     }
 
     public function setRoles(array $roles): self
@@ -140,10 +147,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->username;
     }
 
-    public function setUsername(?string $username): self
+    public function setUsername(?string $username): void
     {
         $this->username = $username;
-        return $this;
     }
 
     public function getCreatedAt(): \DateTimeImmutable
@@ -151,10 +157,19 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    public function setCreatedAt(\DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
-        return $this;
+    }
+
+    public function getTraffics(): Collection
+    {
+        return $this->traffics;
+    }
+
+    public function setTraffics(Collection $traffics): void
+    {
+        $this->traffics = $traffics;
     }
 
     public function getAvatarUrl(): ?string
@@ -162,10 +177,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->avatarUrl;
     }
 
-    public function setAvatarUrl(?string $avatarUrl): self
+    public function setAvatarUrl(?string $avatarUrl): void
     {
         $this->avatarUrl = $avatarUrl;
-        return $this;
     }
 
     public function getGender(): ?string
@@ -173,10 +187,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->gender;
     }
 
-    public function setGender(?string $gender): self
+    public function setGender(?string $gender): void
     {
         $this->gender = $gender;
-        return $this;
     }
 
     public function getPoints(): ?int
@@ -184,10 +197,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->points;
     }
 
-    public function setPoints(?int $points): self
+    public function setPoints(?int $points): void
     {
         $this->points = $points;
-        return $this;
     }
 
     public function getVotes(): Collection
@@ -195,21 +207,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->votes;
     }
 
-    public function addVote(Voting $vote): self
+    public function setVotes(Collection $votes): void
     {
-        if (!$this->votes->contains($vote)) {
-            $this->votes->add($vote);
-            $vote->setUser($this);
-        }
-        return $this;
-    }
-
-    public function removeVote(Voting $vote): self
-    {
-        if ($this->votes->removeElement($vote) && $vote->getUser() === $this) {
-            $vote->setUser(null);
-        }
-        return $this;
+        $this->votes = $votes;
     }
 
     public function getComments(): Collection
@@ -217,21 +217,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->comments;
     }
 
-    public function addComment(Comment $comment): self
+    public function setComments(Collection $comments): void
     {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setAuthor($this);
-        }
-        return $this;
-    }
-
-    public function removeComment(Comment $comment): self
-    {
-        if ($this->comments->removeElement($comment) && $comment->getAuthor() === $this) {
-            $comment->setAuthor(null);
-        }
-        return $this;
+        $this->comments = $comments;
     }
 
     public function getReviews(): Collection
@@ -239,58 +227,19 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->reviews;
     }
 
-    public function addReview(Review $review): self
+    public function setReviews(Collection $reviews): void
     {
-        if (!$this->reviews->contains($review)) {
-            $this->reviews->add($review);
-            $review->setAuthor($this);
-        }
-        return $this;
+        $this->reviews = $reviews;
     }
 
-    public function removeReview(Review $review): self
+    public function getFriendships(): Collection
     {
-        if ($this->reviews->removeElement($review) && $review->getAuthor() === $this) {
-            $review->setAuthor(null);
-        }
-        return $this;
+        return $this->friendships;
     }
 
-    public function getSentFriendRequests(): Collection
+    public function setFriendships(Collection $friendships): void
     {
-        return $this->sentFriendRequests;
-    }
-
-    public function getReceivedFriendRequests(): Collection
-    {
-        return $this->receivedFriendRequests;
-    }
-
-    public function addFriendRequest(Friendship $friendship, bool $isRequester = true): self
-    {
-        $collection = $isRequester ? $this->sentFriendRequests : $this->receivedFriendRequests;
-        if (!$collection->contains($friendship)) {
-            $collection->add($friendship);
-            if ($isRequester) {
-                $friendship->setRequestingUser($this);
-            } else {
-                $friendship->setReceivingUser($this);
-            }
-        }
-        return $this;
-    }
-
-    public function removeFriendRequest(Friendship $friendship, bool $isRequester = true): self
-    {
-        $collection = $isRequester ? $this->sentFriendRequests : $this->receivedFriendRequests;
-        if ($collection->removeElement($friendship)) {
-            if ($isRequester && $friendship->getRequestingUser() === $this) {
-                $friendship->setRequestingUser(null);
-            } elseif (!$isRequester && $friendship->getReceivingUser() === $this) {
-                $friendship->setReceivingUser(null);
-            }
-        }
-        return $this;
+        $this->friendships = $friendships;
     }
 
     public function getNotifications(): Collection
@@ -298,21 +247,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->notifications;
     }
 
-    public function addNotification(Notification $notification): self
+    public function setNotifications(Collection $notifications): void
     {
-        if (!$this->notifications->contains($notification)) {
-            $this->notifications->add($notification);
-            $notification->setRecipient($this);
-        }
-        return $this;
-    }
-
-    public function removeNotification(Notification $notification): self
-    {
-        if ($this->notifications->removeElement($notification) && $notification->getRecipient() === $this) {
-            $notification->setRecipient(null);
-        }
-        return $this;
+        $this->notifications = $notifications;
     }
 
     public function getOffers(): Collection
@@ -320,21 +257,9 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->offers;
     }
 
-    public function addOffer(Offer $offer): self
+    public function setOffers(Collection $offers): void
     {
-        if (!$this->offers->contains($offer)) {
-            $this->offers->add($offer);
-            $offer->setCreator($this);
-        }
-        return $this;
-    }
-
-    public function removeOffer(Offer $offer): self
-    {
-        if ($this->offers->removeElement($offer) && $offer->getCreator() === $this) {
-            $offer->setCreator(null);
-        }
-        return $this;
+        $this->offers = $offers;
     }
 
     public function getReports(): Collection
@@ -342,42 +267,28 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->reports;
     }
 
-    public function addReport(Report $report): self
+    public function setReports(Collection $reports): void
     {
-        if (!$this->reports->contains($report)) {
-            $this->reports->add($report);
-            $report->setAuthor($this);
-        }
-        return $this;
+        $this->reports = $reports;
     }
 
-    public function removeReport(Report $report): self
+    public function getCanYouGiveARide(): Collection
     {
-        if ($this->reports->removeElement($report) && $report->getAuthor() === $this) {
-            $report->setAuthor(null);
-        }
-        return $this;
+        return $this->canYouGiveARide;
     }
 
-    public function getZaMbaHoentos(): Collection
+    public function setCanYouGiveARide(Collection $canYouGiveARide): void
     {
-        return $this->zaMbaHoentos;
+        $this->canYouGiveARide = $canYouGiveARide;
     }
 
-    public function addZaMbaHoento(ZaMbaHoento $zaMbaHoento): self
+    public function eraseCredentials(): void
     {
-        if (!$this->zaMbaHoentos->contains($zaMbaHoento)) {
-            $this->zaMbaHoentos->add($zaMbaHoento);
-            $zaMbaHoento->setUser($this);
-        }
-        return $this;
     }
 
-    public function removeZaMbaHoento(ZaMbaHoento $zaMbaHoento): self
+    public function getUserIdentifier(): string
     {
-        if ($this->zaMbaHoentos->removeElement($zaMbaHoento) && $zaMbaHoento->getUser() === $this) {
-            $zaMbaHoento->setUser(null);
-        }
-        return $this;
+        return $this->email ?? $this->username ?? (string)$this->id;
     }
+
 }

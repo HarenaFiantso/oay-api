@@ -15,12 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[AllowDynamicProperties]
-#[Route('/api/user')]
+#[AllowDynamicProperties] #[Route('/api/user')]
 final class UserController extends AbstractBaseController
 {
     private UserManager $manager;
-
     public function __construct(
         EntityManagerInterface      $entityManager,
         SerializerUtils             $serializerUtils,
@@ -33,11 +31,6 @@ final class UserController extends AbstractBaseController
         $this->manager = $userManager;
     }
 
-    /**
-     * Create or update a user.
-     *
-     * @Route("/add", name: "user.add", methods: ['POST', 'PUT'])
-     */
     #[Route('/add', name: 'user.add', methods: ['POST', 'PUT'])]
     public function createOrUpdateUser(Request $request): JsonResponse
     {
@@ -45,149 +38,118 @@ final class UserController extends AbstractBaseController
         $user = $this->manager->handleUser($data);
 
         return $this->save($user)
-            ? new JsonResponse(['message' => 'success'], Response::HTTP_OK)
-            : new JsonResponse(['message' => 'An error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ? $this->json(['message' => 'success'], Response::HTTP_OK)
+            : $this->json(['message' => 'An error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    /**
-     * Get the list of users.
-     *
-     * @Route("/", name: "user.getList", methods: ['GET'])
-     */
     #[Route('/', name: 'user.getList', methods: ['GET'])]
     public function getUserList(UserRepository $userRepository): JsonResponse
     {
         $users = $userRepository->findAll();
         $userList = array_map(fn($user) => json_decode($this->serializer->serialize($user)), $users);
 
-        return new JsonResponse(['list' => $userList], Response::HTTP_OK);
+        return $this->json(['list' => $userList], Response::HTTP_OK);
     }
 
-    /**
-     * Get details of a specific user.
-     *
-     * @Route("/details/{id}", name: "user.getDetails", methods: ['GET'])
-     */
     #[Route('/{id}', name: 'user.getDetails', methods: ['GET'])]
     public function getUserDetails(User $user): JsonResponse
     {
-        $thisUser = [
-            'id' => $user->getId(),
-            'avatar' => $user->getAvatarUrl(),
-            'name' => $user->getFullName(),
-            'username' => $user->getUsername(),
-            'email' => $user->getEmail(),
-            'gender' => $user->getGender() ?? 'Just a human bro',
-        ];
-
-        return new JsonResponse(['user' => $thisUser], Response::HTTP_OK);
+        return $this->json([
+            'user' => [
+                'id' => $user->getId(),
+                'avatar' => $user->getAvatarUrl(),
+                'name' => $user->getFullName(),
+                'username' => $user->getUsername(),
+                'email' => $user->getEmail(),
+                'gender' => $user->getGender() ?? 'Just a human bro',
+            ]
+        ]);
     }
 
-    /**
-     * Remove a user.
-     *
-     * @Route("/delete/{id}", name: "user.delete", methods: ['DELETE'])
-     */
-    #[Route('/delete/{id}', name: 'user.getProfile', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'user.delete', methods: ['DELETE'])]
     public function removeUser(User $user): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
 
         return $this->delete($user)
-            ? new JsonResponse(['status' => 'success'], Response::HTTP_OK)
-            : new JsonResponse(['status' => 'error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ? $this->json(['status' => 'success'])
+            : $this->json(['status' => 'error'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    /**
-     * Search a user.
-     *
-     * @Route("/search, name: "user.search", methods: ['DELETE'])
-     */
     #[Route('/search', name: 'user.search', methods: ['GET'])]
     public function findUser(UserRepository $userRepository, Request $request): JsonResponse
     {
-        $term = $request->get('term');
         try {
+            $term = $request->get('term');
             $data = $userRepository->searchUser($term);
 
-            return new JsonResponse(['status' => 'success', 'data' => $data]);
-        } catch (\Exception) {
-            return new JsonResponse(['status' => 'error']);
+            return $this->json(['status' => 'success', 'data' => $data]);
+        } catch (\Throwable) {
+            return $this->json(['status' => 'error']);
         }
     }
 
-    /**
-     * Get notification.
-     *
-     * @Route("/notifications/{id}, name: "user.getNotification", methods: ['GET'])
-     */
     #[Route('/notifications/{id}', name: 'user.getNotification', methods: ['GET'])]
     public function getNotification(User $user, NotificationRepository $notificationRepository): JsonResponse
     {
-        $notifs = $notificationRepository->findByUser($user);
-        $data = [];
+        $notifications = array_map(fn($n) => [
+            'title' => $n->getTitle(),
+            'id' => $n->getId(),
+            'createdAt' => $n->getCreatedAt()->format('d-m-Y H:i'),
+        ], $notificationRepository->findByUser($user));
 
-        foreach ($notifs as $key => $notification) {
-            $data[$key]['title'] = $notification->getTitle();
-            $data[$key]['id'] = $notification->getId();
-            $data[$key]['createdAt'] = $notification->getCreatedAt()->format('d-m-Y H:i');
-        }
-
-        return new JsonResponse(['notifications' => $data]);
+        return $this->json(['notifications' => $notifications]);
     }
 
-    /**
-     * Get notifications count
-     *
-     * @Route("/notifications/count/{id}, name: "user.countNewNotifications", methods: ['GET'])
-     */
     #[Route('/notifications/count/{id}', name: 'user.countNewNotifications', methods: ['GET'])]
     public function getCountNotifications(User $user, NotificationRepository $notificationRepository): JsonResponse
     {
-        $notifs = count($notificationRepository->findByUser($user));
+        $count = count($notificationRepository->findByUser($user));
 
-        return new JsonResponse(['notifications' => $notifs]);
+        return $this->json(['notifications' => $count]);
     }
 
-    /**
-     * Get all notifications
-     *
-     * @Route("/notifications/all/{id}, name: "user.getAllNotifications", methods: ['GET'])
-     */
     #[Route('/notifications/all/{id}', name: 'user.getAllNotifications', methods: ['GET'])]
     public function getAllNotifications(Request $request, User $user, NotificationRepository $notificationRepository): JsonResponse
     {
-        $limit = $request->get('limit');
-        $page = $request->get('page');
+        $limit = (int)$request->get('limit', 10);
+        $page = (int)$request->get('page', 0);
 
-        $notifs = $notificationRepository->findViewedNotif($user, $page ?: 0, $limit + 10);
-        $data = [];
+        $notifications = array_map(fn($n) => [
+            'title' => $n->getTitle(),
+            'id' => $n->getId(),
+            'createdAt' => $n->getDateAdd()->format('d-m-Y H:i'),
+        ], $notificationRepository->findViewedNotif($user, $page, $limit));
 
-        foreach ($notifs as $key => $notification) {
-            $data[$key]['title'] = $notification->getTitle();
-            $data[$key]['id'] = $notification->getId();
-            $data[$key]['createdAt'] = $notification->getDateAdd()->format('d-m-Y H:i');
-        }
-
-        return new JsonResponse(['notifications' => $data]);
+        return $this->json(['notifications' => $notifications]);
     }
 
-    /**
-     * View Notifications
-     *
-     * @Route("/viewAll/notifications/{id}, name: "user.viewNotifications", methods: ['GET'])
-     */
     #[Route('/viewAll/notifications/{id}', name: 'user.viewNotifications', methods: ['GET'])]
     public function viewNotifications(User $user): JsonResponse
     {
-        $notifs = $user->getNotifications();
-
-        foreach ($notifs as $notification) {
+        foreach ($user->getNotifications() as $notification) {
             $notification->setIsView(true);
         }
 
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'success']);
+        return $this->json(['message' => 'success']);
+    }
+
+    #[Route('/friend/{id}', name: 'user.listUserFriends', methods: ['GET'])]
+    public function userFriends(User $user): JsonResponse
+    {
+        try {
+            $friends = array_map(fn($friend) => [
+                'user' => $friend->getUser()->getName(),
+                'dateFriend' => $friend->getDateAccepted()
+                    ? $friend->getDateAccepted()->format('d-m-Y H:i')
+                    : 'Your demand is pending',
+            ], $user->getFriendships()->toArray());
+
+            return $this->json(['status' => 'success', 'data' => $friends]);
+        } catch (\Throwable) {
+            return $this->json(['status' => 'error']);
+        }
     }
 }

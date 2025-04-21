@@ -19,7 +19,7 @@ class UserRepository extends ServiceEntityRepository
     public function searchUser(string $needle): array
     {
         $data = $this->createQueryBuilder('u')
-            ->andWhere('u.name = :name')
+            ->andWhere('u.fullName = :fullName')
             ->andWhere('u.email = :email')
             ->setParameter('name', '%' . $needle . '%')
             ->setParameter('email', '%' . $needle . '%')
@@ -30,7 +30,7 @@ class UserRepository extends ServiceEntityRepository
         $lists = [];
 
         foreach ($data as $key => $item) {
-            $lists[$key]['name'] = $item->getFullName();
+            $lists[$key]['fullName'] = $item->getFullName();
             $lists[$key]['email'] = $item->getEmail();
             $lists[$key]['id'] = $item->getId();
         }
