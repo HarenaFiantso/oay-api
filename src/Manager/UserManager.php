@@ -8,7 +8,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserManager extends AbstractManager
 {
-    public function __construct(UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher)
+    public function __construct(
+        UserRepository              $userRepository,
+        UserPasswordHasherInterface $userPasswordHasher)
     {
         parent::__construct($userRepository, $userPasswordHasher);
     }
