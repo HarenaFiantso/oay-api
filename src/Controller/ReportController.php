@@ -14,11 +14,9 @@ use App\Repository\NeighborhoodRepository;
 use App\Repository\ReportRepository;
 use App\Repository\UserRepository;
 use App\Utils\SerializerUtils;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use OneSignal\OneSignal;
 use Psr\Log\LoggerInterface;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -46,7 +44,6 @@ class ReportController extends AbstractBaseController
         private readonly VoteManager           $voteManager,
         private readonly ReportRepository      $reportRepository,
         private readonly FilesystemOperator    $defaultStorage,
-        private readonly OneSignal             $oneSignal,
         private readonly LoggerInterface       $logger,
     )
     {
@@ -62,8 +59,6 @@ class ReportController extends AbstractBaseController
 
             $this->entityManager->persist($report);
             $this->entityManager->flush();
-
-            $this->sendOneSignalNotification($report, $request->getSchemeAndHttpHost());
 
             return new JsonResponse(['status' => 'success', 'id' => $report->getId()], 201);
         } catch (\Exception $e) {
@@ -225,21 +220,6 @@ class ReportController extends AbstractBaseController
         $optimizerChain->optimize($this->parameterBag->get('file_upload') . $newFilename);
 
         return sprintf('%s/image/%s', $host, $newFilename);
-    }
-
-    private function sendOneSignalNotification(Report $report, string $host): void
-    {
-        try {
-            $this->oneSignal->notifications()->add([
-                'contents' => ['en' => sprintf('%s - %s', $report->getLocation(), $report->getCategory())],
-                'included_segments' => ['All'],
-                'send_after' => new DateTimeImmutable(),
-                'data' => ['Oay' => 'Share something'],
-                'url' => $host,
-            ]);
-        } catch (\Exception $e) {
-            $this->logger->error('Failed to send OneSignal notification: {message}', ['message' => $e->getMessage()]);
-        }
     }
 
     private function handleExistingVotes(Report $report, User $user): void
