@@ -171,4 +171,23 @@ final class UserController extends AbstractBaseController
 
         return new JsonResponse(['notifications' => $data]);
     }
+
+    /**
+     * View Notifications
+     *
+     * @Route("/viewAll/notifications/{id}, name: "user.viewNotifications", methods: ['GET'])
+     */
+    #[Route('/viewAll/notifications/{id}', name: 'user.viewNotifications', methods: ['GET'])]
+    public function viewNotifications(User $user): JsonResponse
+    {
+        $notifs = $user->getNotifications();
+
+        foreach ($notifs as $notification) {
+            $notification->setIsView(true);
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse(['message' => 'success']);
+    }
 }
