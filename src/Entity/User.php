@@ -291,4 +291,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email ?? $this->username ?? (string)$this->id;
     }
 
+    public function addNotification(Notification $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications[] = $notification;
+            $notification->setRecipient($this);
+        }
+
+        return $this;
+    }
 }
