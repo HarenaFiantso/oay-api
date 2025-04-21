@@ -126,4 +126,14 @@ class Comment
 
         return $this;
     }
+
+    public function addComment(self $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setParentComment($this);
+        }
+
+        return $this;
+    }
 }
