@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250419194519 extends AbstractMigration
+final class Version20250421054109 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,12 +20,6 @@ final class Version20250419194519 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql(<<<'SQL'
-            DROP SEQUENCE user_id_seq CASCADE
-        SQL);
-        $this->addSql(<<<'SQL'
-            DROP SEQUENCE voting_id_seq CASCADE
-        SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE comments (id SERIAL NOT NULL, author_id INT NOT NULL, report_id INT NOT NULL, parent_comment_id INT DEFAULT NULL, content TEXT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
         SQL);
@@ -114,7 +108,7 @@ final class Version20250419194519 extends AbstractMigration
             CREATE TABLE useful_numbers (id SERIAL NOT NULL, name VARCHAR(255) DEFAULT NULL, category VARCHAR(255) DEFAULT NULL, phone_number VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE "users" (id SERIAL NOT NULL, email VARCHAR(255) DEFAULT NULL, password VARCHAR(255) NOT NULL, full_name VARCHAR(255) DEFAULT NULL, roles JSON NOT NULL, username VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, avatar_url TEXT DEFAULT NULL, gender VARCHAR(255) DEFAULT NULL, points INT DEFAULT NULL, PRIMARY KEY(id))
+            CREATE TABLE "users" (id SERIAL NOT NULL, email VARCHAR(255) DEFAULT NULL, password VARCHAR(255) NOT NULL, full_name VARCHAR(255) DEFAULT NULL, roles JSON NOT NULL, username VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, avatar_url TEXT DEFAULT NULL, gender VARCHAR(255) DEFAULT NULL, points INT DEFAULT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE UNIQUE INDEX UNIQ_1483A5E9E7927C74 ON "users" (email)
@@ -142,6 +136,41 @@ final class Version20250419194519 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             COMMENT ON COLUMN za_mba_hoentos.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE messenger_messages (id BIGSERIAL NOT NULL, body TEXT NOT NULL, headers TEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, available_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, delivered_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_75EA56E0FB7336F0 ON messenger_messages (queue_name)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_75EA56E0E3BD61CE ON messenger_messages (available_at)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_75EA56E016BA31DB ON messenger_messages (delivered_at)
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN messenger_messages.created_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN messenger_messages.available_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            COMMENT ON COLUMN messenger_messages.delivered_at IS '(DC2Type:datetime_immutable)'
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE OR REPLACE FUNCTION notify_messenger_messages() RETURNS TRIGGER AS $$
+                BEGIN
+                    PERFORM pg_notify('messenger_messages', NEW.queue_name::text);
+                    RETURN NEW;
+                END;
+            $$ LANGUAGE plpgsql;
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TRIGGER IF EXISTS notify_trigger ON messenger_messages;
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TRIGGER notify_trigger AFTER INSERT OR UPDATE ON messenger_messages FOR EACH ROW EXECUTE PROCEDURE notify_messenger_messages();
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE comments ADD CONSTRAINT FK_5F9E962AF675F31B FOREIGN KEY (author_id) REFERENCES "users" (id) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -182,15 +211,6 @@ final class Version20250419194519 extends AbstractMigration
         $this->addSql(<<<'SQL'
             ALTER TABLE za_mba_hoentos ADD CONSTRAINT FK_4E64FD2261220EA6 FOREIGN KEY (creator_id) REFERENCES "users" (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE voting DROP CONSTRAINT fk_fc28da55ebb4b8ad
-        SQL);
-        $this->addSql(<<<'SQL'
-            DROP TABLE "user"
-        SQL);
-        $this->addSql(<<<'SQL'
-            DROP TABLE voting
-        SQL);
     }
 
     public function down(Schema $schema): void
@@ -198,24 +218,6 @@ final class Version20250419194519 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
             CREATE SCHEMA public
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE SEQUENCE user_id_seq INCREMENT BY 1 MINVALUE 1 START 1
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE SEQUENCE voting_id_seq INCREMENT BY 1 MINVALUE 1 START 1
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE TABLE "user" (id SERIAL NOT NULL, email VARCHAR(255) DEFAULT NULL, password VARCHAR(255) NOT NULL, name VARCHAR(255) DEFAULT NULL, roles JSON NOT NULL, pseudo VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, avatar TEXT DEFAULT NULL, gender VARCHAR(255) DEFAULT NULL, point INT DEFAULT NULL, PRIMARY KEY(id))
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE TABLE voting (id SERIAL NOT NULL, voter_id INT DEFAULT NULL, type VARCHAR(255) DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE INDEX idx_fc28da55ebb4b8ad ON voting (voter_id)
-        SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE voting ADD CONSTRAINT fk_fc28da55ebb4b8ad FOREIGN KEY (voter_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE comments DROP CONSTRAINT FK_5F9E962AF675F31B
@@ -300,6 +302,9 @@ final class Version20250419194519 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE za_mba_hoentos
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE messenger_messages
         SQL);
     }
 }
