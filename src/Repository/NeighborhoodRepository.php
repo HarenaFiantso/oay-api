@@ -15,4 +15,14 @@ class NeighborhoodRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Neighborhood::class);
     }
+
+    public function findNeighborhood(string $value, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('n')
+            ->where('n.name LIKE :val')
+            ->setParameter('val', $value . '%')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
