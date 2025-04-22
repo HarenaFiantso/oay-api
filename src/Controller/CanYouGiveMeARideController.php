@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\CanYouGiveMeARide;
 use App\Manager\CanYouGiveMeARideManager;
 use App\Repository\CanYouGiveMeARideRepository;
-use App\Repository\UserRepository;
 use App\Utils\SerializerUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,17 +15,14 @@ use Symfony\Component\Routing\Attribute\Route;
 #[AsController] #[Route('/api/can_you_give_me_a_ride')]
 final class CanYouGiveMeARideController extends AbstractBaseController
 {
-    private UserRepository $userRepository;
     private CanYouGiveMeARideManager $canYouGiveMeARideManager;
 
     public function __construct(
         EntityManagerInterface   $entityManager,
         SerializerUtils          $serializerUtils,
-        UserRepository           $userRepository,
         CanYouGiveMeARideManager $canYouGiveMeARideManager)
     {
         parent::__construct($entityManager, $serializerUtils);
-        $this->userRepository = $userRepository;
         $this->canYouGiveMeARideManager = $canYouGiveMeARideManager;
     }
 
@@ -68,5 +65,17 @@ final class CanYouGiveMeARideController extends AbstractBaseController
         }
 
         return new JsonResponse(['data' => $lists]);
+    }
+
+    #[Route('/delete/{id}', name: 'canYouGiveMeGiveMeARive.delete', methods: ['DELETE'])]
+    public function remove(CanYouGiveMeARide $canYouGiveMeARide): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+
+        if ($this->delete($canYouGiveMeARide)) {
+            return new JsonResponse(['status' => 'success']);
+        }
+
+        return new JsonResponse(['status' => 'error']);
     }
 }
