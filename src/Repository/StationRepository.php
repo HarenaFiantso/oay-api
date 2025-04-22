@@ -15,4 +15,12 @@ class StationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Station::class);
     }
+
+    public function findAllRegion()
+    {
+        $qb = $this->createQueryBuilder('s');
+        $qb->select('s.region');
+
+        return $qb->getQuery()->getResult();
+    }
 }
