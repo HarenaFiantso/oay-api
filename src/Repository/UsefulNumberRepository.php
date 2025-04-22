@@ -15,4 +15,14 @@ class UsefulNumberRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, UsefulNumber::class);
     }
+
+    public function search(?string $needle)
+    {
+        $qb = $this->createQueryBuilder('n');
+        $qb->andWhere('n.name LIKE :param OR n.category LIKE :param OR n.phone_number LIKE :param')
+            ->setParameter('param', '%' . $needle . '%')
+            ->orderBy('n.category', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
 }
