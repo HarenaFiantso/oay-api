@@ -55,7 +55,7 @@ class Todo
         return $this;
     }
 
-    public function isCompleted(): bool
+    public function getIsCompleted(): bool
     {
         return $this->isCompleted;
     }

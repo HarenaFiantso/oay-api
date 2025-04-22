@@ -2,30 +2,54 @@
 
 namespace App\Manager;
 
+use App\Entity\Todo;
 use App\Repository\TodoRepository;
+use Symfony\Component\HttpFoundation\Request;
 
-class TodoManager
+readonly class TodoManager
 {
-    private TodoRepository $todoRepository;
-
-    public function __construct(TodoRepository $todoRepository)
+    public function __construct(
+        private TodoRepository $todoRepository
+    )
     {
-        $this->todoRepository = $todoRepository;
     }
 
     public function findAll(): array
     {
         $todos = $this->todoRepository->findBy([], ['id' => 'desc']);
 
-        $list = [];
+        return array_map([$this, 'normalizeTodo'], $todos);
+    }
 
-        foreach ($todos as $key => $todo) {
-            $list[$key]['title'] = $todo->getTitle();
-            $list[$key]['description'] = $todo->getDescription();
-            $list[$key]['isCompleted'] = $todo->getIsCompleted();
-            $list[$key]['id'] = $todo->getId();
+    public function manageTodo(Request $request): Todo
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $todo = null;
+        if (!empty($data['id'])) {
+            $todo = $this->todoRepository->find($data['id']);
         }
 
-        return $list;
+        $todo ??= new Todo();
+
+        if (!empty($data['title'])) {
+            $todo->setTitle($data['title']);
+        }
+
+        if (array_key_exists('description', $data)) {
+            $todo->setDescription($data['description']);
+        }
+
+        return $todo;
+    }
+
+    private function normalizeTodo(Todo $todo): array
+    {
+        return [
+            'id' => $todo->getId(),
+            'title' => $todo->getTitle(),
+            'description' => $todo->getDescription(),
+            'isCompleted' => $todo->getIsCompleted(),
+        ];
     }
 }

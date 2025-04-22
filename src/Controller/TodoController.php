@@ -6,6 +6,7 @@ use App\Manager\TodoManager;
 use App\Utils\SerializerUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -29,5 +30,16 @@ final class TodoController extends AbstractBaseController
         $lists = $this->todoManager->findAll();
 
         return new JsonResponse(['todos' => $lists]);
+    }
+
+    #[Route('/manager/todo', name: 'todo.create', methods: ['POST', 'PUT'])]
+    public function manageTodo(Request $request): JsonResponse
+    {
+        $todo = $this->todoManager->manageTodo($request);
+        if ($this->save($todo)) {
+            return new JsonResponse(['status' => 'success', 'todo' => $todo->getId()]);
+        }
+
+        return new JsonResponse(['message' => 'error']);
     }
 }
