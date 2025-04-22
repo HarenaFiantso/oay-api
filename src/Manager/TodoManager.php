@@ -5,6 +5,7 @@ namespace App\Manager;
 use App\Entity\Todo;
 use App\Repository\TodoRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 readonly class TodoManager
 {
@@ -16,29 +17,34 @@ readonly class TodoManager
 
     public function findAll(): array
     {
-        $todos = $this->todoRepository->findBy([], ['id' => 'desc']);
+        $todos = $this->todoRepository->findBy([], ['id' => 'DESC']);
 
-        return array_map([$this, 'normalizeTodo'], $todos);
+        return array_map(fn(Todo $todo) => $this->normalizeTodo($todo), $todos);
     }
 
-    public function manageTodo(Request $request): Todo
+    public function createFromRequest(Request $request): Todo
     {
-        $data = json_decode($request->getContent(), true);
+        $data = $this->parseRequestData($request);
 
-        $todo = null;
-        if (!empty($data['id'])) {
-            $todo = $this->todoRepository->find($data['id']);
+        if (empty($data['title'])) {
+            throw new BadRequestHttpException('Title is required');
         }
 
-        $todo ??= new Todo();
+        $todo = new Todo();
+        $this->updateTodoFields($todo, $data);
 
-        if (!empty($data['title'])) {
-            $todo->setTitle($data['title']);
+        return $todo;
+    }
+
+    public function updateFromRequest(Todo $todo, Request $request): Todo
+    {
+        $data = $this->parseRequestData($request);
+
+        if (empty($data['title'])) {
+            throw new BadRequestHttpException('Title is required');
         }
 
-        if (array_key_exists('description', $data)) {
-            $todo->setDescription($data['description']);
-        }
+        $this->updateTodoFields($todo, $data);
 
         return $todo;
     }
@@ -48,8 +54,31 @@ readonly class TodoManager
         return [
             'id' => $todo->getId(),
             'title' => $todo->getTitle(),
-            'description' => $todo->getDescription(),
-            'isCompleted' => $todo->getIsCompleted(),
+            'description' => $todo->getDescription() ?? '',
+            'isCompleted' => $todo->isCompleted(),
         ];
+    }
+
+    private function parseRequestData(Request $request): array
+    {
+        $content = $request->getContent();
+
+        if (empty($content)) {
+            throw new BadRequestHttpException('Request body is empty');
+        }
+
+        $data = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new BadRequestHttpException('Invalid JSON format');
+        }
+
+        return $data;
+    }
+
+    private function updateTodoFields(Todo $todo, array $data): void
+    {
+        $todo->setTitle($data['title']);
+        $todo->setDescription($data['description'] ?? null);
     }
 }

@@ -36,7 +36,7 @@ final class TodoController extends AbstractBaseController
     #[Route('/manage/todo', name: 'todo.create', methods: ['POST', 'PUT'])]
     public function manageTodo(Request $request): JsonResponse
     {
-        $todo = $this->todoManager->manageTodo($request);
+        $todo = $this->todoManager->createFromRequest($request);
         if ($this->save($todo)) {
             return new JsonResponse(['status' => 'success', 'todo' => $todo->getId()]);
         }
@@ -52,6 +52,16 @@ final class TodoController extends AbstractBaseController
             $lists = $this->todoManager->findAll();
 
             return new JsonResponse(['status' => 'success', 'todos' => $lists]);
+        }
+
+        return new JsonResponse(['status' => 'error']);
+    }
+
+    #[Route('/delete/todo/{id}', name: 'todo.delete', methods: ['DELETE'])]
+    public function deleteTodo(Todo $todo): JsonResponse
+    {
+        if ($this->delete($todo)) {
+            return new JsonResponse(['status' => 'success']);
         }
 
         return new JsonResponse(['status' => 'error']);
