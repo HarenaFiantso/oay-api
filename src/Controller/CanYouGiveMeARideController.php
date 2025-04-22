@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Manager\CanYouGiveMeARideManager;
+use App\Repository\CanYouGiveMeARideRepository;
 use App\Repository\UserRepository;
 use App\Utils\SerializerUtils;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,7 +13,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController] #[Route('/api/can_you_give_me_a_ride')]
-class CanYouGiveMeARideController extends AbstractBaseController
+final class CanYouGiveMeARideController extends AbstractBaseController
 {
     private UserRepository $userRepository;
     private CanYouGiveMeARideManager $canYouGiveMeARideManager;
@@ -44,5 +45,28 @@ class CanYouGiveMeARideController extends AbstractBaseController
         return new JsonResponse(['message' => 'error']);
     }
 
+    #[Route('/list', name: 'canYouGiveMeGiveMeARive.list', methods: ['GET', 'HEAD'])]
+    public function listData(CanYouGiveMeARideRepository $canYouGiveMeARideRepository, Request $request): JsonResponse
+    {
+        $limit = $request->get('limit');
+        $page = $request->get('page');
+        $web = $request->get('web');
 
+        $data = $web ? $canYouGiveMeARideRepository->findPaginatedForWeb($limit + 10, $page ? $page : 0) : $canYouGiveMeARideRepository->findPaginated($limit + 10);
+        $lists = [];
+
+        foreach ($data as $key => $canYouGiveMeARide) {
+            $lists[$key]['id'] = $canYouGiveMeARide->getId();
+            $lists[$key]['departureLocation'] = $canYouGiveMeARide->getDepartureLocation();
+            $lists[$key]['arrivalLocation'] = $canYouGiveMeARide->getArrivalLocation();
+            $lists[$key]['creator']['fullName'] = $canYouGiveMeARide->getCreator() ? $canYouGiveMeARide->getCreator()->getFullName() : 'Me';
+            $lists[$key]['departureDate'] = $canYouGiveMeARide->getDepartureDate() ? $canYouGiveMeARide->getDepartureDate()->format('d-m-Y H:i') : 'Today';
+            $lists[$key]['contactInfo'] = $canYouGiveMeARide->getContactInfo();
+            $lists[$key]['preferences'] = $canYouGiveMeARide->getPreferences();
+            $lists[$key]['seatCount'] = $canYouGiveMeARide->getSeatCount();
+            $lists[$key]['exactLocation'] = $canYouGiveMeARide->getExactLocation();
+        }
+
+        return new JsonResponse(['data' => $lists]);
+    }
 }
