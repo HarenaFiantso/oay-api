@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 #[AsController]
 #[Route('/api/station')]
-class StationController extends AbstractBaseController
+final class StationController extends AbstractBaseController
 {
     #[Route('/regions', name: 'station.regionList', methods: ['GET'])]
     public function listRegions(StationRepository $stationRepository): JsonResponse

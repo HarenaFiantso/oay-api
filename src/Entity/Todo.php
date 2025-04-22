@@ -21,7 +21,7 @@ class Todo
     private ?string $description = null;
 
     #[ORM\Column]
-    private bool $isCompleted = false;
+    private bool $isCompleted;
 
     public function __construct()
     {
