@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\ZaMbaHoentoRepository;
+use App\Repository\CanYouGiveMeARideRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ZaMbaHoentoRepository::class)]
-#[ORM\Table(name: 'za_mba_hoentos')]
-class ZaMbaHoento
+#[ORM\Entity(repositoryClass: CanYouGiveMeARideRepository::class)]
+#[ORM\Table(name: 'can_you_give_me_a_ride')]
+class CanYouGiveMeARide
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -27,7 +27,7 @@ class ZaMbaHoento
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
-    #[ORM\ManyToOne(inversedBy: 'zaMbaHoentos')]
+    #[ORM\ManyToOne(inversedBy: 'canYouGiveMeARide')]
     #[ORM\JoinColumn(nullable: false)]
     private User $creator;
 

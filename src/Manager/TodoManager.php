@@ -4,15 +4,25 @@ namespace App\Manager;
 
 use App\Entity\Todo;
 use App\Repository\TodoRepository;
+use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-readonly class TodoManager
+class TodoManager extends AbstractManager
 {
+    private TodoRepository $todoRepository;
+
     public function __construct(
-        private TodoRepository $todoRepository
-    )
+        UserRepository              $userRepository,
+        UserPasswordHasherInterface $passwordHasher,
+        TodoRepository              $repository)
     {
+        parent::__construct(
+            $userRepository,
+            $passwordHasher,
+        );
+        $this->todoRepository = $repository;
     }
 
     public function findAll(): array

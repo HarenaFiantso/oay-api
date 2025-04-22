@@ -70,7 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Report::class, mappedBy: 'author')]
     private Collection $reports;
 
-    #[ORM\OneToMany(targetEntity: ZaMbaHoento::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: CanYouGiveMeARide::class, mappedBy: 'user')]
     private Collection $canYouGiveARide;
 
     public function __construct()
