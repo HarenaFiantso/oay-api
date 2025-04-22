@@ -23,4 +23,13 @@ class StationRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function findByRegion(string $region)
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.region = :val')
+            ->setParameter('val', $region)
+            ->orderBy('s.distributor', 'ASC')
+            ->getQuery()->getResult();
+    }
 }
