@@ -16,20 +16,46 @@ class StationRepository extends ServiceEntityRepository
         parent::__construct($registry, Station::class);
     }
 
-    public function findAllRegion()
-    {
-        $qb = $this->createQueryBuilder('s');
-        $qb->select('s.region');
-
-        return $qb->getQuery()->getResult();
-    }
-
-    public function findByRegion(string $region)
+    public function findAllRegions(): array
     {
         return $this->createQueryBuilder('s')
-            ->andWhere('s.region = :val')
-            ->setParameter('val', $region)
+            ->select('DISTINCT s.region')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findStationsByRegion(string $region): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.region = :region')
+            ->setParameter('region', $region)
             ->orderBy('s.distributor', 'ASC')
-            ->getQuery()->getResult();
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function searchStations(?string $keyword, string $region = 'Analamanga', int $limit = 10): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->where('s.region = :region')
+            ->setParameter('region', $region)
+            ->orderBy('s.distributor', 'ASC');
+
+        if ($keyword) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    's.commune LIKE :keyword',
+                    's.district LIKE :keyword',
+                    's.locality LIKE :keyword',
+                    's.name LIKE :keyword',
+                    's.distributor LIKE :keyword'
+                )
+            )
+                ->setParameter('keyword', '%' . $keyword . '%');
+        }
+
+        return $qb->getQuery()
+            ->setMaxResults($limit)
+            ->getResult();
     }
 }
